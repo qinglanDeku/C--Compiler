@@ -7,7 +7,7 @@ using std::list;
 
 class structItem;
 enum TYPE{
-    INT, FLOAT, STRUCT, INTARRAY, FLOATARRAY, STRUCTARRAY
+    INT, FLOAT, STRUCT, INTARRAY, FLOATARRAY, STRUCTARRAY, VOID
 };      //all possible type used in c-- language 
 
 
@@ -47,7 +47,7 @@ public:
     void pushArg(TYPE type){ArgList.push_back(type);}             //uncertain
     const string& GetName(){return name;}
     const TYPE& GetRetType(){return retval;}
-    const TYPE& GetArg(int No){return ArgList[No - 1];}
+    const TYPE& GetArg(int No){return ArgList[No - 1];}         //flawed
 
 private:
     string name;
@@ -81,7 +81,7 @@ public:
     ~FuncSymbolTab(){}
     void AddItem(funItem &item){table.push_back(item);}
     void DeleteItem(char* ItemName);
-    const varItem* FindItem(const char*name);
+    const funItem* FindItem(const char*name);
 private:
     list<funItem> table;
 };
@@ -99,9 +99,10 @@ public:
     ~structItem(){}
     
     structItem(string &name):name(name){}
-    const string& Getname(){return name;}
+    const string& GetName(){return name;}
     void AddMember(varItem member){MemberVar.push_back(member);}
     const varItem* GetMember(int No){return &MemberVar[No - 1];}
+    const varItem* GetMember(const string& name);
 
 private:
     string name;
