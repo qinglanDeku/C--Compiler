@@ -17,13 +17,15 @@ public:
 
     varItem(){}
     varItem(const varItem& a);      //all item class need copy construct function
-    varItem(string &name, TYPE type, int lineNo);
+    varItem(string &name, TYPE type, int lineNo, int dimension):name(name), \
+    type(type), lineNo(lineNo), dimension(dimension){}
     ~varItem(){}
 
     const string& GetName(){return name;}
     const TYPE& GetType(){return type;}
     const int& GetLineNo(){return lineNo;}
     const structItem* GetStructType(){return structType;}
+    void SetStructType(structItem *type);//if Item type is struct
 private:
     string name;
     TYPE type;

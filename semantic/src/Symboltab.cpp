@@ -1,8 +1,10 @@
 #include"Symboltab.h"
+
+/*class varItem*/
 varItem::varItem(const varItem& a){
     this->name = a.name;
     this->type = a.type;
-    this->structType = nullptr;
+    this->structType = NULL;
     this->dimension = 0;
     if(this->type == STRUCT)
         this->structType = a.structType;
@@ -21,6 +23,27 @@ varItem::varItem(const varItem& a){
     this->lineNo = a.lineNo;
 }
 
-varItem::varItem(string &name, TYPE type, int lineNo):name(name), type(type), lineNo(lineNo){
-    
+void varItem::SetStructType(structItem* type){
+    this->structType = type;
 }
+
+/*class funItem*/
+funItem::funItem(const funItem& a){
+    this->name = a.name;
+    this->retval = a.retval;
+    this->ArgList.assign(a.ArgList.begin(), a.ArgList.end());
+}
+
+
+
+
+
+/*class VarSymbolTab*/
+void VarSymbolTab::DeleteItem(char* Itemname){
+    string tempname;
+    tempname.assign(Itemname);
+    
+
+}
+
+
