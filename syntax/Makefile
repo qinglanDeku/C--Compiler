@@ -1,7 +1,7 @@
 OBJS = *.o
 
 syntax: syntax.tab.c
-	g++ -c main.cpp syntax.c syntax.tab.c 
+	g++ -c main.cpp syntax.cpp syntax.tab.c 
 
 syntax.tab.c: lex.yy.c
 	bison -d syntax.y

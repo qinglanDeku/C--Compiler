@@ -3,58 +3,81 @@
 #include<vector>
 #include<string>
 using namespace std;
-
+class structItem;
+enum TYPE{
+    INT, FLOAT, STRUCT, INTARRAY, FLOATARRAY, STRUCTARRAY
+};      //all possible type used in c-- language 
 class varItem{
 public:
-    enum varType{
-        INT, FLOAT
-    };
+
     varItem(){}
-    varItem(string &name, varType type, int ival):name(name), type(type), ival(ival){}
-    varItem(string &name, varType type, float fval):name(name), type(type), fval(fval){}
+    varItem(const varItem& a);
+    varItem(string &name, TYPE type, int lineNo):name(name), type(type), lineNo(lineNo){}
     ~varItem(){}
 
     const string GetName(){return name;}
-    const varType GetType(){return type;}
-    const float GetFval(){return fval;}
-    const int GetIval(){return ival;}
-    void SetIval(int newVal){ival = newVal;}
-    void SetFval(float newVal){fval = newVal;}
+    const TYPE GetType(){return type;}
+    const int GetLineNo(){return lineNo;}
+    const structItem* GetStructType(){return structType;}
 private:
     string name;
-    varType type;
-    union {
-        int ival;
-        float fval;
-    };
+    TYPE type;
+    structItem* structType;      //only the var type is STRUCT
+    int dimension;    //only the variable is array
+    int lineNo;     //where the variable first appears
 
 };
 
 
-class funItem{
+class funItem{      //when first define or first declare a function, then create a funItem
 public:
-    enum retType{
-        INT, FLOAT, VOID
-    };
-    enum ArgType{
-        Int, Float
-    };
     funItem(){}
-    funItem(string &funname, retType retval):name(funname), retval(retval){}
+    funItem(const funItem& a);
+    funItem(string &funname, TYPE retval):name(funname), retval(retval){}
     ~funItem(){}
 
-    void pushArg(ArgType type){ArgList.push_back(type);}             //uncertain
-
-
+    void pushArg(TYPE type){ArgList.push_back(type);}             //uncertain
 
 private:
     string name;
-    retType retval;
-    vector<ArgType> ArgList;
+    TYPE retval;        //return variable
+    vector<TYPE> ArgList;       //arguments list
     
 };
 
 class VarSymbolTab{
 public:
-    
+    void AddItem(varItem item){table.push_back(item);}
+    void DeleteItem(char* ItemName);
+    const varItem* FindItem(const string& name);       //if can't find, return nullptr
+private:
+    list<varItem> table;
 };
+
+
+
+class funSymbalTab{
+public:
+    void AddItem(funItem item){table.push_back(item);}
+    void DeleteItem(char* ItemName);
+    const varItem* FindItem(const string& name);
+private:
+    list<funItem> table;
+};
+
+
+/*it means struct type but not struct var*/
+class structItem{
+public:
+    structItem(){}
+    structItem(const structItem& a);
+    ~structItem(){}
+    
+    structItem(string &name):name(name){}
+    const string Getname(){return name;}
+    void AddMember(varItem member){MemberVar.push_back(member);}
+
+private:
+    string name;
+    vector<varItem> MemberVar;      //struct member push both in symbletab and membervar
+};  

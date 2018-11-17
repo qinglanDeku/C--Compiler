@@ -127,6 +127,15 @@ ExtDef:Specifier error SEMI |
         AddChild($$, $1);
         AddSibling($1, $2);
     }
+
+    | Specifier FunDec SEMI     {
+        Unit temp;
+        strcpy(temp.SU.name, "ExtDef");
+        $$ = CreateNode(Syntactic, temp, @$.first_line);
+        AddChild($$, $1);
+        AddSibling($1, $2);
+        AddSibling($2, $3);
+    }
     | Specifier FunDec CompSt   {
         Unit temp;
         strcpy(temp.SU.name, "ExtDef");
