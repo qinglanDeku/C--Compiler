@@ -11,13 +11,13 @@ class varItem{
 public:
 
     varItem(){}
-    varItem(const varItem& a);
+    varItem(const varItem& a);      //all item class need copy construct function
     varItem(string &name, TYPE type, int lineNo):name(name), type(type), lineNo(lineNo){}
     ~varItem(){}
 
-    const string GetName(){return name;}
-    const TYPE GetType(){return type;}
-    const int GetLineNo(){return lineNo;}
+    const string& GetName(){return name;}
+    const TYPE& GetType(){return type;}
+    const int& GetLineNo(){return lineNo;}
     const structItem* GetStructType(){return structType;}
 private:
     string name;
@@ -37,6 +37,9 @@ public:
     ~funItem(){}
 
     void pushArg(TYPE type){ArgList.push_back(type);}             //uncertain
+    const string& GetName(){return name;}
+    const TYPE& GetRetType(){return retval;}
+    const TYPE& GetArg(int No){return ArgList[No - 1];}
 
 private:
     string name;
@@ -74,8 +77,9 @@ public:
     ~structItem(){}
     
     structItem(string &name):name(name){}
-    const string Getname(){return name;}
+    const string& Getname(){return name;}
     void AddMember(varItem member){MemberVar.push_back(member);}
+    const varItem* GetMember(int No){return &MemberVar[No - 1];}
 
 private:
     string name;
