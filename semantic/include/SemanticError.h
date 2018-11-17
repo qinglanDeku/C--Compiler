@@ -5,7 +5,7 @@ using std::vector;
 
 class SemanticErrorInfo{
 public:
-    static string errorType[17];        //initial in cpp, include 17 types
+    static string errorType[19];        //initial in cpp, include 17 types
     SemanticErrorInfo(){}
     SemanticErrorInfo(int lineNO, string &ObjectName, int errorNo);
     ~SemanticErrorInfo(){}
