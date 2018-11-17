@@ -1,18 +1,23 @@
 #include<list>
-#include<stack>
 #include<vector>
 #include<string>
-using namespace std;
+using std::string;
+using std::vector;
+using std::list;
+
 class structItem;
 enum TYPE{
     INT, FLOAT, STRUCT, INTARRAY, FLOATARRAY, STRUCTARRAY
 };      //all possible type used in c-- language 
+
+
+/*variable symbol*/
 class varItem{
 public:
 
     varItem(){}
     varItem(const varItem& a);      //all item class need copy construct function
-    varItem(string &name, TYPE type, int lineNo):name(name), type(type), lineNo(lineNo){}
+    varItem(string &name, TYPE type, int lineNo);
     ~varItem(){}
 
     const string& GetName(){return name;}
@@ -29,6 +34,7 @@ private:
 };
 
 
+/*function symbol*/
 class funItem{      //when first define or first declare a function, then create a funItem
 public:
     funItem(){}
@@ -48,28 +54,42 @@ private:
     
 };
 
+
+
+
+/*variable table*/
 class VarSymbolTab{
 public:
-    void AddItem(varItem item){table.push_back(item);}
+    VarSymbolTab(){}
+    ~VarSymbolTab(){}
+    void AddItem(varItem &item){table.push_back(item);}
     void DeleteItem(char* ItemName);
-    const varItem* FindItem(const string& name);       //if can't find, return nullptr
+    const varItem* FindItem(const char*name);       //if can't find, return nullptr
 private:
     list<varItem> table;
 };
 
 
 
-class funSymbalTab{
+
+/*function table*/
+class FuncSymbolTab{
 public:
-    void AddItem(funItem item){table.push_back(item);}
+    FuncSymbolTab(){}
+    ~FuncSymbolTab(){}
+    void AddItem(funItem &item){table.push_back(item);}
     void DeleteItem(char* ItemName);
-    const varItem* FindItem(const string& name);
+    const varItem* FindItem(const char*name);
 private:
     list<funItem> table;
 };
 
 
-/*it means struct type but not struct var*/
+
+
+
+/* struct symbol
+it means struct type but not struct variable */
 class structItem{
 public:
     structItem(){}
@@ -85,3 +105,16 @@ private:
     string name;
     vector<varItem> MemberVar;      //struct member push both in symbletab and membervar
 };  
+
+
+/*struct table*/
+class structTab{
+    structTab(){}
+    ~structTab(){}
+    void AddItem(structItem &item){table.push_back(item);}
+    void DeleteItem(char *ItemName);
+    const structItem* FindItem(const char* name);
+    
+private:
+    list<structItem> table;
+};
