@@ -21,12 +21,12 @@ void Analyze::AnalyzeDef(SyntaxTreeNode* node){
     string SpecifierName;       
     TYPE DefType;       //retval when function def, type when variable def
     /*judge this Specifier a struct or a base type*/
-    if(p->child->type == 0){    //this is a struct Specifier
+    if(p->child->type == Syntactic){    //this is a struct Specifier
         SpecifierName = p->child->NodeUnit.SU.name;
         SyntaxTreeNode* structP = p->child;     //structp = StructSpecifier
         if(ChildNumber(structP) == 2){
             /*this is just a declaration, need to complete definition*/
-            string StructName(GetChild(structP,2)->child->NodeUnit.SU.name);
+            string StructName(GetChild(structP,2)->child->NodeUnit.LU.IDname);
             structItem newItem(StructName, structP->lineno);
             StructTab.AddItem(newItem);
             
@@ -34,6 +34,14 @@ void Analyze::AnalyzeDef(SyntaxTreeNode* node){
 
         else{
             /*this is a struct definition, but maybe has no name!*/
+            SyntaxTreeNode *nameNode = GetChild(structP, 2);
+            string StructName;
+            if(nameNode->type == Empty)
+                StructName = "\0";
+            else
+                StructName = GetChild(nameNode, 1)->NodeUnit.LU.IDname;
+            structItem newItem(StructName, structP->lineno);
+            StructTab.AddItem(newItem);
             
         }
     }
