@@ -41,18 +41,22 @@ class funItem{      //when first define or first declare a function, then create
 public:
     funItem(){}
     funItem(const funItem& a);
-    funItem(string &funname, TYPE retval):name(funname), retval(retval){}
+    funItem(string &funname, TYPE retval, int DecLine):name(funname), retval(retval),\
+        DecLine(DecLine), DefLine(-1){}
     ~funItem(){}
 
     void pushArg(TYPE type){ArgList.push_back(type);}             //uncertain
     const string& GetName(){return name;}
     const TYPE& GetRetType(){return retval;}
     const TYPE& GetArg(int No){return ArgList[No - 1];}         //flawed
+    void setDefLine(int line){DefLine = line;}      //sometimes DefLine = DecLine;
 
 private:
     string name;
     TYPE retval;        //return variable
     vector<TYPE> ArgList;       //arguments list
+    int DecLine;        //where declaration of this function shows
+    int DefLine;        //where define of the function shows
     
 };
 

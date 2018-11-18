@@ -3,25 +3,31 @@
 using std::string;
 using std::vector;
 
-class SemanticErrorInfo{
+class SemanticError{
 public:
     static string errorType[19];        //initial in cpp, include 17 types
-    SemanticErrorInfo(){}
-    SemanticErrorInfo(int lineNO, string &ObjectName, int errorNo);
-    ~SemanticErrorInfo(){}
+    SemanticError(){}
+    SemanticError(const SemanticError& a):lineNo(a.lineNo), ObjectName(a.ObjectName),\
+        errorNo(a.errorNo), errorInfo(a.errorInfo){}
+    SemanticError(int lineNo, string &ObjectName, int errorNo):\
+        lineNo(lineNo), ObjectName(ObjectName), errorNo(errorNo){}
+    ~SemanticError(){}
+    /*Splice private Member errorInfo*/
+    void SpliceErrorInfo(int lineNo, string ObjectName, int errorNo);
 
 private:
     int lineNo;
     string ObjectName;
     int errorNo;        //from 1 to 17
+    string errorInfo;
 };
 
 
 /*error list, create a global variable to use*/
 class SemanticErrorList{    
     void PrintErrorList();
-    void AddError(SemanticErrorInfo &error);
+    void AddError(SemanticError &error){errorList.push_back(error);}
 private:
-    vector<SemanticErrorInfo> errorList;
+    vector<SemanticError> errorList;
 };
 
