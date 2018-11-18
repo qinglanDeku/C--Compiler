@@ -5,7 +5,6 @@
 #include<stdlib.h>
 #include<string.h>
 
-
 #define Syntactic 0
 #define Lexical 1
 #define Empty 2
@@ -69,6 +68,11 @@ SyntaxTreeNode* CreateNode(char type, Unit NodeUnit, int lineno);
 void AddChild(SyntaxTreeNode* parent, SyntaxTreeNode* child);  
 //set child as parent's child
 
+int ChildNumber(SyntaxTreeNode* parent);
+//count Child number for a node;
+
+SyntaxTreeNode* GetChild(SyntaxTreeNode* parent, int No);
+//get the number no child
 
 void AddSibling(SyntaxTreeNode* Node1, SyntaxTreeNode* Node2);
 // Set Node2 as Node1's NextSibling

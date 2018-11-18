@@ -80,6 +80,26 @@ void AddChild(SyntaxTreeNode* parent, SyntaxTreeNode* child){
     parent->child = child;
 }
 
+int ChildNumber(SyntaxTreeNode* parent){
+    int mycount = 0;
+    SyntaxTreeNode* Cp = parent->child;
+    while(Cp != NULL){
+        mycount += 1;
+        Cp = Cp->NextSibling;
+    }
+    return mycount;
+}
+
+SyntaxTreeNode* GetChild(SyntaxTreeNode* parent, int No){
+    SyntaxTreeNode *pChild = parent->child;
+    for(int i = 1 ; i < No; i++){
+        if(pChild == NULL)
+            break;
+        pChild = pChild->NextSibling;
+    }
+    return pChild;
+}
+
 void AddSibling(SyntaxTreeNode* Node1, SyntaxTreeNode* Node2){
     Node1->NextSibling = Node2;
 }
@@ -105,6 +125,11 @@ void TraverseSubTree(SyntaxTreeNode *node){
     
     SetNodeDepth(node, depth);
     depth++;
+
+
+    /*if(node->type == 0){
+        node->NodeUnit.SU.name 
+    }*/
     TraverseSubTree(node->child);
     depth--;
     TraverseSubTree(node->NextSibling);

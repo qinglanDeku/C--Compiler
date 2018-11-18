@@ -102,7 +102,7 @@ public:
     structItem(const structItem& a);
     ~structItem(){}
     
-    structItem(string &name):name(name){}
+    structItem(string &name, int lineNo):name(name), lineNo(lineNo){}
     const string& GetName(){return name;}
     void AddMember(varItem member){MemberVar.push_back(member);}
     const varItem* GetMember(int No){return &MemberVar[No - 1];}
@@ -110,12 +110,14 @@ public:
 
 private:
     string name;
+    int lineNo;      //first appear line
     vector<varItem> MemberVar;      //struct member push both in symbletab and membervar
 };  
 
 
 /*struct table*/
 class structTab{
+public:
     structTab(){}
     ~structTab(){}
     void AddItem(structItem &item){table.push_back(item);}
