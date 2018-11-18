@@ -1,7 +1,10 @@
 #include "SemanticError.h"
 #include<sstream>
+#include<iostream>
+using std::cout;
+using std::endl;
 /************************************
- class SemanticErrorInfo*/
+ class SemanticError*/
 
 string SemanticError::errorType[19] = {
     "Undefined variable \""/*variable*/,      //error type1
@@ -122,3 +125,15 @@ void SemanticError::SpliceErrorInfo(int lineNo, string ObjectName, int errorNo){
 
     }
 }
+
+
+
+
+/*class SemanticErrorList*/
+void SemanticErrorList::PrintErrorList(){
+    for(int i(0); i < errorList.size(); i++){
+        cout << errorList[i].errorInfo <<endl;
+    }
+}
+
+

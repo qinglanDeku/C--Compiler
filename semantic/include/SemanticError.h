@@ -3,6 +3,7 @@
 using std::string;
 using std::vector;
 
+
 class SemanticError{
 public:
     static string errorType[19];        //initial in cpp, include 17 types
@@ -14,7 +15,7 @@ public:
     ~SemanticError(){}
     /*Splice private Member errorInfo*/
     void SpliceErrorInfo(int lineNo, string ObjectName, int errorNo);
-
+    friend class SemanticErrorList;
 private:
     int lineNo;
     string ObjectName;
