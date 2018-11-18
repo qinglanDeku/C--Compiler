@@ -31,6 +31,11 @@ void Analyze::AnalyzeDef(SyntaxTreeNode* node){
             StructTab.AddItem(newItem);
             
         }
+
+        else{
+            /*this is a struct definition, but maybe has no name!*/
+            
+        }
     }
 
 }
