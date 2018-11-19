@@ -91,7 +91,7 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
                                     }
                                     else if(VariableTab.FindItem(MemName) != NULL){
                                         /*error type 3*/
-                                        
+                                        //begin here
                                     }
                                 }
                                 while(ChildNumber(DecList) != 1);
