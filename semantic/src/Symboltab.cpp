@@ -4,9 +4,9 @@
 varItem::varItem(const varItem& a){
     this->name = a.name;
     this->type = a.type;
-    this->structType = NULL;
-    this->dimension = 0;
-    if(this->type == STRUCT)
+    this->structType = a.structType;
+    this->dimension = a.dimension;
+    /*if(this->type == STRUCT)
         this->structType = a.structType;
         
     else if(this->type == INTARRAY){
@@ -19,7 +19,7 @@ varItem::varItem(const varItem& a){
         this->structType = a.structType;
         this->dimension = a.dimension;
     }
-    else;
+    else;*/
     this->lineNo = a.lineNo;
 }
 

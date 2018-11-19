@@ -18,7 +18,7 @@ public:
     varItem(){}
     varItem(const varItem& a);      //all item class need copy construct function
     varItem(string &name, TYPE type, int lineNo, int dimension):name(name), \
-    type(type), lineNo(lineNo), dimension(dimension){}
+    type(type), lineNo(lineNo), dimension(dimension), structType(NULL){}
     ~varItem(){}
 
     const string& GetName(){return name;}
@@ -108,6 +108,7 @@ public:
     const string& GetName(){return name;}
     void AddMember(varItem member){MemberVar.push_back(member);}
     void SetFstDefLine(int FstDefLine){this->FstDefLine = FstDefLine;}
+    int GetFstDefLine() const {return this->FstDefLine;}
     int MemberNum() const {return MemberVar.size();}
     const varItem* GetMember(int No){return &MemberVar[No - 1];}
     const varItem* GetMember(const string& name);

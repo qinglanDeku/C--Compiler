@@ -10,6 +10,7 @@ private:
     void AnalyzeExtDef(SyntaxTreeNode* Node);
     void AnalyzeDef(SyntaxTreeNode* Node);
     void AnalyzeExp(SyntaxTreeNode* Node);
+    structItem* AnlzStructMem(SyntaxTreeNode* SubStructSpecf, structItem* OwnerStruct);
     VarSymbolTab VariableTab;
     FuncSymbolTab FunctionTab;
     structTab StructTab;
