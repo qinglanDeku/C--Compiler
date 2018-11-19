@@ -21,7 +21,7 @@ string SemanticError::errorType[19] = {
     /*variable*/"\" is not an integer.",    //error type12
     "Illegal us of \".\"",   //error type13
     "Non-existent field \"" /* "varaible" */, //error type14
-    "Redefined field \"" /* "variable" */, //error type15
+    "Redefined field or initialize field \"" /* "variable" */, //error type15
     "Duplicated name \"" /* "struct name"*/, //error type16
     "Undefined structure \"" /* "struct name" */,  //error type17
     "Inconsistent declaration of function \"" /* "func name" */,  //errortype 18

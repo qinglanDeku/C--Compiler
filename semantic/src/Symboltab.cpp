@@ -109,7 +109,8 @@ const funItem* FuncSymbolTab::FindItem(const char*name){
  class structItem*/
  structItem::structItem(const structItem& a){
      this->name = a.name;
-     this->lineNo = a.lineNo;
+     this->FstDecLine = a.FstDecLine;
+     this->FstDefLine = a.FstDefLine;
      this->MemberVar.assign(a.MemberVar.begin(), a.MemberVar.end());
  }
 

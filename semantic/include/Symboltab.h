@@ -71,6 +71,7 @@ public:
     void AddItem(varItem &item){table.push_back(item);}
     void DeleteItem(char* ItemName);
     const varItem* FindItem(const char*name);       //if can't find, return nullptr
+    const varItem* FindItem(const string& name);    //undefine!
 private:
     list<varItem> table;
 };
@@ -102,16 +103,20 @@ public:
     structItem(const structItem& a);
     ~structItem(){}
     
-    structItem(string &name, int lineNo):name(name), lineNo(lineNo){}
+    structItem(string &name, int FstDecLine, int FstDefLine):\
+        name(name), FstDecLine(FstDecLine), FstDefLine(FstDefLine){}
     const string& GetName(){return name;}
     void AddMember(varItem member){MemberVar.push_back(member);}
+    void SetFstDefLine(int FstDefLine){this->FstDefLine = FstDefLine;}
     int MemberNum() const {return MemberVar.size();}
     const varItem* GetMember(int No){return &MemberVar[No - 1];}
     const varItem* GetMember(const string& name);
 
 private:
     string name;
-    int lineNo;      //first appear line
+    int FstDecLine;      //first declare line
+    int FstDefLine;      /*first define line ,
+    sometimes both lines are the same. If FstDefLine = -1, it was undefined */
     vector<varItem> MemberVar;      //struct member push both in symbletab and membervar
 };  
 
