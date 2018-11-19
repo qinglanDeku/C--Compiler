@@ -7,8 +7,8 @@ public:
     void TraverseTree(SyntaxTreeNode* Node);
 
 private:
+    void AnalyzeExtDef(SyntaxTreeNode* Node);
     void AnalyzeDef(SyntaxTreeNode* Node);
-    void AnalyzeDec(SyntaxTreeNode* Node);
     void AnalyzeExp(SyntaxTreeNode* Node);
     VarSymbolTab VariableTab;
     FuncSymbolTab FunctionTab;

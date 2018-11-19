@@ -105,6 +105,7 @@ public:
     structItem(string &name, int lineNo):name(name), lineNo(lineNo){}
     const string& GetName(){return name;}
     void AddMember(varItem member){MemberVar.push_back(member);}
+    int MemberNum() const {return MemberVar.size();}
     const varItem* GetMember(int No){return &MemberVar[No - 1];}
     const varItem* GetMember(const string& name);
 
@@ -122,7 +123,9 @@ public:
     ~structTab(){}
     void AddItem(structItem &item){table.push_back(item);}
     void DeleteItem(char *ItemName);
+    int TabSize(){return table.size();}
     const structItem* FindItem(const char* name);
+    const structItem* FindItem(const string& name);
     
 private:
     list<structItem> table;

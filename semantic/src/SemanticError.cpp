@@ -98,31 +98,37 @@ void SemanticError::SpliceErrorInfo(int lineNo, string ObjectName, int errorNo){
         case 13:
         errorInfo = "Error Type at line" + strLineNo + ":" \
             +errorType[12];
+        break;
 
         case 14:
         errorInfo = "Error Type at line" + strLineNo + ":" \
             + errorType[13] + ObjectName + "\"";
+        break;
 
         case 15:
         errorInfo = "Error Type at line" + strLineNo + ":" \
             +errorType[14] + ObjectName + "\"";
+        break;
 
         case 16:
         errorInfo = "Error Type at line" + strLineNo + ":" \
             +errorType[15] + ObjectName + "\"";
+        break;
 
         case 17:
         errorInfo = "Error Type at line" + strLineNo + ":" \
             + errorType[16] + ObjectName + "\"";
+        break;
 
         case 18:
         errorInfo = "Error Type at line" + strLineNo + ":" \
             + errorType[17] + ObjectName + "\"";
+        break;
 
         case 19:
         errorInfo = "Error Type at line" + strLineNo + ":" \
             + errorType[18] + ObjectName + "\"";
-
+        break;
     }
 }
 
