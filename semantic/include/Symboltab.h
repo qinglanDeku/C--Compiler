@@ -130,8 +130,8 @@ public:
     void AddItem(structItem &item){table.push_back(item);}
     void DeleteItem(char *ItemName);
     int TabSize(){return table.size();}
-    const structItem* FindItem(const char* name);
-    const structItem* FindItem(const string& name);
+    structItem* FindItem(const char* name);
+    structItem* FindItem(const string& name);
     
 private:
     list<structItem> table;

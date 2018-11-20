@@ -144,7 +144,7 @@ void structTab::DeleteItem(char *ItemName){
     table.erase(it);
 }
 
-const structItem* structTab::FindItem(const char* name){
+structItem* structTab::FindItem(const char* name){
     string tempname;
     tempname.assign(name);
     list<structItem>::iterator it = table.begin();
@@ -159,7 +159,7 @@ const structItem* structTab::FindItem(const char* name){
         return &(*it);
 }
 
-const structItem* structTab::FindItem(const string& name){
+structItem* structTab::FindItem(const string& name){
     list<structItem>::iterator it = table.begin();
     while(it != table.end()){
         if(it->GetName() == name)
