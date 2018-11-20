@@ -1,7 +1,10 @@
 #include"syntax.h"
+#include"../semantic/include/SemanticAnalyze.h"
 extern int yydebug;
 extern void yyrestart(FILE* input_file);
 extern int yyparse(void);
+extern SyntaxTreeNode* TreeRoot;
+
 
 int yycolumn = 1;
 int yyline = 1;
@@ -23,7 +26,11 @@ int main(int argc, char** argv){
         ;
     else{
     TraverseTree();
-    PrintTree();
+    Analyze * A= new Analyze;
+    A->TraverseTree(TreeRoot);
+    A->PrintSemanticError();
+   // printf("????");
+   // PrintTree();
     }
         
     }

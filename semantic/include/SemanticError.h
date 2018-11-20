@@ -1,3 +1,4 @@
+#pragma once
 #include<string>
 #include<vector>
 using std::string;
@@ -32,6 +33,7 @@ class SemanticErrorList{
 public:
     void PrintErrorList();
     void AddError(SemanticError &error){errorList.push_back(error);}
+    int size(){return errorList.size();}
 private:
     vector<SemanticError> errorList;
 };

@@ -32,101 +32,105 @@ string SemanticError::errorType[19] = {
 void SemanticError::SpliceErrorInfo(int lineNo, string ObjectName, int errorNo){
    std::stringstream ss;
    string strLineNo;
+   string strErrorNo;
    ss << lineNo;
    ss >>strLineNo;
+   ss.clear();
+   ss<<errorNo;
+   ss>>strErrorNo;
    switch(errorNo){
         case 1:
-        errorInfo ="Error Type at Line" + strLineNo + ":"\
+        errorInfo ="Error Type " + strErrorNo +" at Line " + strLineNo + ":"\
         + errorType[0] + ObjectName;
         errorInfo.append("\".");
         break;
         
         case 2:
-        errorInfo ="Error Type at line" + strLineNo + ":" \
+        errorInfo ="Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
         +  errorType[1] + ObjectName;
         errorInfo.append("\".");
         break;
 
         case 3:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
         + errorType[2] + ObjectName;
         errorInfo.append("\".");
         break;
 
         case 4:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
         + errorType[3] + ObjectName;
         errorInfo.append("\".");
         break;
 
         case 5:
-        errorInfo = "Error Type at line" + strLineNo + ":" + errorType[4];
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" + errorType[4];
         break;
 
         case 6:
-        errorInfo = "Error Type at line" + strLineNo + ":" + errorType[5];
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" + errorType[5];
         break;
 
         case 7:
-        errorInfo = "Error Type at line" + strLineNo + ":" +errorType[6];
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" +errorType[6];
         break;
 
         case 8:
-        errorInfo = "Error Type at line" + strLineNo + ":" +errorType[7];
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" +errorType[7];
         break;
 
         case 9:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
         +ObjectName + errorType[8];
         break;
 
         case 10:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
         +"\"" + ObjectName + errorType[9];
         break;
 
         case 11:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
         +"\"" + ObjectName + errorType[10];
         break;
 
         case 12:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
             + "\"" + ObjectName + errorType[11];
         break;
 
         case 13:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
             +errorType[12];
         break;
 
         case 14:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
             + errorType[13] + ObjectName + "\"";
         break;
 
         case 15:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
             +errorType[14] + ObjectName + "\"";
         break;
 
         case 16:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
             +errorType[15] + ObjectName + "\"";
         break;
 
         case 17:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
             + errorType[16] + ObjectName + "\"";
         break;
 
         case 18:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
             + errorType[17] + ObjectName + "\"";
         break;
 
         case 19:
-        errorInfo = "Error Type at line" + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line  " + strLineNo + ":" \
             + errorType[18] + ObjectName + "\"";
         break;
     }

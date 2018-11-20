@@ -1,3 +1,4 @@
+#pragma once
 #include"SemanticError.h"
 #include"Symboltab.h"
 #include"../../syntax/syntax.h"
@@ -5,7 +6,9 @@
 class Analyze{
 public:
     void TraverseTree(SyntaxTreeNode* Node);
-
+    void PrintSemanticError(){
+        ErrorList.PrintErrorList();
+    }
 private:
 #define DefinedStructType 1
 #define UnDefinedStructType 0

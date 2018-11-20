@@ -1,3 +1,4 @@
+#pragma once
 #include<list>
 #include<vector>
 #include<string>
@@ -71,7 +72,7 @@ public:
     void AddItem(varItem &item){table.push_back(item);}
     void DeleteItem(char* ItemName);
     const varItem* FindItem(const char*name);       //if can't find, return nullptr
-    const varItem* FindItem(const string& name);    //undefine!
+    const varItem* FindItem(const string& name);   
 private:
     list<varItem> table;
 };
@@ -130,6 +131,9 @@ public:
     void AddItem(structItem &item){table.push_back(item);}
     void DeleteItem(char *ItemName);
     int TabSize(){return table.size();}
+    structItem* GetBack(){
+        return &(table.back());
+    }
     structItem* FindItem(const char* name);
     structItem* FindItem(const string& name);
     

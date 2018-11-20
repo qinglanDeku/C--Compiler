@@ -70,6 +70,19 @@ const varItem* VarSymbolTab::FindItem(const char*name){
         return &(*it);
 }
 
+const varItem* VarSymbolTab::FindItem(const string &name){
+    list<varItem>::iterator it = table.begin();
+    while(it != table.end()){
+        if(it->GetName() == name)
+            break;
+        it++;
+    }
+    if(it == table.end())
+        return NULL;
+    else
+        return &(*it);
+}
+
 
 
 /* *************************************************

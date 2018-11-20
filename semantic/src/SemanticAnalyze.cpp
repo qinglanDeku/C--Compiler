@@ -1,20 +1,24 @@
 #include"SemanticAnalyze.h"
-
+#include<iostream>
+#include<assert.h>
 /*class Analyze*/
 void Analyze::TraverseTree(SyntaxTreeNode* node){
     if(node == NULL)
         return;
-    if(node->type == 0){
+    if(node->type == Syntactic){
+        
         string nodeName(node->NodeUnit.SU.name);
-        if(nodeName == "ExtDef")
+        
+        if(nodeName == "ExtDef"){
             AnalyzeExtDef(node);
-        else if(nodeName == "Def")
+        }
+        /*else if(nodeName == "Def")
             AnalyzeDef(node);
         else if(nodeName == "Exp")
-            AnalyzeExp(node);
+            AnalyzeExp(node);*/
     }
-    TraverseSubTree(node->child);
-    TraverseSubTree(node->NextSibling);
+    TraverseTree(node->child);
+    TraverseTree(node->NextSibling);
 }
 
 //void Analyze::AnlzStructMem(SyntaxTreeNode* SubStructSpecf, structItem* OwnerStruct);
@@ -25,6 +29,7 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
     if(ChildNumber(ExtDefNode) == 2){
     /*undner most circumstances, using this production for 
     define a type of struct or declare a type of struct*/
+
         if(GetChild(specf, 1)->type == Lexical)
             /*nonsene
             this kind of ExtDef is like
@@ -34,7 +39,8 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
         else{
             SyntaxTreeNode* structSpecf = GetChild(specf,1);     //structSpecf = StructSpecifier
 
-            if(ChildNumber(structSpecf) == 2){    
+            if(ChildNumber(structSpecf) == 2){ 
+  
             /*this is just a declaration, and need to check the structTab, 
             ensure the struct has been definition.If not, need to define after*/
                 string StructName(GetChild(structSpecf,2)->child->NodeUnit.LU.IDname);
@@ -50,6 +56,7 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
             
             else{
             /*truely define a struct type*/
+                
                 string structName;
                 if(GetChild(structSpecf,2)->type == Empty){
                 /*No name struct type ,can't be used after*/
@@ -61,294 +68,15 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
                 
                 if(structName == "" || StructTab.FindItem(structName) == NULL ){
                 /*not exist in the StructTab, first define*/
+                    
                     structItem newStructItem(structName, structSpecf->lineno, structSpecf->lineno);
-                    SyntaxTreeNode* DefList(GetChild(structSpecf, 4));
-                    SyntaxTreeNode* Def(NULL);
-                    /*begin check member variable*/
-                    while(DefList->type != Empty){
-                    /*for every member def, first ensure Specifier,
-                    then dec*/
-                        Def = GetChild(DefList, 1);
-                        SyntaxTreeNode* DefSpecf = GetChild(Def, 1);
-                        string StrMemberType;
-                        TYPE MemberType;
-                        structItem* MembStructType(NULL);
-                        if(GetChild(DefSpecf, 1)->type == Lexical){
-                            /*base type*/
-                            StrMemberType = string(GetChild(DefSpecf,1)->NodeUnit.LU.IDname);
-                        }
-                        else{
-                            MembStructType = AnlzStruct(DefSpecf, &newStructItem);
-                        }
-
-                        SyntaxTreeNode* DecList(GetChild(Def, 2));
-                        SyntaxTreeNode* Dec(GetChild(DecList, 1));            
-                        int CountDimension(0);
-                        SyntaxTreeNode* VarDec(GetChild(Dec, 1));
-                        SyntaxTreeNode* VarName(GetChild(VarDec, 1));
-                        while(ChildNumber(VarDec) != 1){
-                            VarDec = GetChild(VarDec, 1);
-                            VarName = GetChild(VarDec, 1);
-                            CountDimension += 1;
-                        }
-                        string MemName(VarName->NodeUnit.LU.IDname);
-                        if(ChildNumber(Dec) == 3){
-                            /*Error type 15 ,initialize member var*/
-                            /*Error but still add this memeber into varList as if Right
-                            Firstly add Error, then Add member*/
-                            SemanticError newError(Dec->lineno, MemName, 15);
-                            ErrorList.AddError(newError);
-                        }
-                        if(CountDimension == 0){
-                        /*this member variable is not an array*/
-                            if(MembStructType == NULL){
-                            /*this Member's type is not struct */ 
-                                MemberType = (StrMemberType == "int"?INT:FLOAT);
-                            }
-                            else
-                                MemberType = STRUCT;
-                        }
-                        else{
-                        /*this member variable is an array*/
-                            if(MembStructType == NULL)
-                                MemberType = (StrMemberType == "int"?INTARRAY:FLOATARRAY);
-                            else
-                                MemberType = STRUCTARRAY; 
-
-                        }    
-                        /*before add, check it*/
-                        if(newStructItem.GetMember(MemName) != NULL){
-                            /*error type15, redefine of a struct member*/
-                            SemanticError newError(Dec->lineno, MemName, 15);
-                            ErrorList.AddError(newError);
-                        }
-                        else if(VariableTab.FindItem(MemName) != NULL){
-                            /*error type 3*/
-                            SemanticError newError(Dec->lineno, MemName, 3);
-                            ErrorList.AddError(newError);
-                        }
-                        else{
-                                /*no redefine*/
-                            varItem newMemVar(MemName, MemberType, Dec->lineno, CountDimension);
-                            if(MembStructType != NULL){
-                            /*struct type variable need to set the pointer pointing to this
-                            struct type*/
-                                newMemVar.SetStructType(MembStructType);
-                            }
-                            newStructItem.AddMember(newMemVar);
-                            VariableTab.AddItem(newMemVar);
-                        }
-                        
-                        while(ChildNumber(DecList) != 1){
-                        /*repeat what outside and just over this "while" */
-                            DecList = GetChild(DecList, 3);
-                            Dec = GetChild(DecList, 1);
-                            CountDimension = 0;
-                            VarDec = GetChild(Dec,1);
-                            VarName = GetChild(VarDec, 1);
-                            while(ChildNumber(VarDec) != 1){
-                                VarDec = GetChild(VarDec, 1);
-                                VarName = GetChild(VarDec, 1);
-                                CountDimension += 1;
-                            }
-                            MemName = string(VarName->NodeUnit.LU.IDname);
-                            if(ChildNumber(Dec) == 3){
-                            /*Error type 15 ,initialize member var*/
-                            /*Error but still add this memeber into varList as if Right
-                            Firstly add Error, then Add member*/
-                                SemanticError newError(Dec->lineno, MemName, 15);
-                                ErrorList.AddError(newError);
-                            }
-                            if(CountDimension == 0){
-                            /*this member variable is not an array*/
-                                if(MembStructType == NULL){
-                                /*this Member's type is not struct */ 
-                                    MemberType = (StrMemberType == "int"?INT:FLOAT);
-                                }
-                                else
-                                    MemberType = STRUCT;
-                            }
-                            else{
-                            /*this member variable is an array*/
-                                if(MembStructType == NULL)
-                                    MemberType = (StrMemberType == "int"?INTARRAY:FLOATARRAY);
-                                else
-                                    MemberType = STRUCTARRAY; 
-
-                            }    
-                            /*before add, check it*/
-                            if(newStructItem.GetMember(MemName) != NULL){
-                            /*error type15, redefine of a struct member*/
-                                SemanticError newError(Dec->lineno, MemName, 15);
-                                ErrorList.AddError(newError);
-                            }
-                            else if(VariableTab.FindItem(MemName) != NULL){
-                            /*error type 3*/
-                                SemanticError newError(Dec->lineno, MemName, 3);
-                                ErrorList.AddError(newError);
-                            }
-                            else{
-                            /*no redefine*/
-                                varItem newMemVar(MemName, MemberType, Dec->lineno, CountDimension);
-                                if(MembStructType != NULL){
-                                /*struct type variable need to set the pointer pointing to this
-                                struct type*/
-                                    newMemVar.SetStructType(MembStructType);
-                                }
-                                newStructItem.AddMember(newMemVar);
-                                VariableTab.AddItem(newMemVar);
-                            }
-                        }
-                        
-                        DefList = GetChild(DefList, 2);
-                    }
-                    StructTab.AddItem(newStructItem);
+                    AnlzStruct(structSpecf, &newStructItem, UnDefinedStructType);
                 }
 
                 else if(StructTab.FindItem(structName) != NULL && StructTab.FindItem(structName)->GetFstDefLine() == -1){
                 /*Struct type had declared but not define*/
                     structItem* DefItem = StructTab.FindItem(structName);
-                    DefItem->SetFstDefLine(structSpecf->lineno);
-                    SyntaxTreeNode* DefList(GetChild(structSpecf, 4));
-                    SyntaxTreeNode* Def(NULL);
-                    /*begin check member variable*/
-                    while(DefList->type != Empty){
-                    /*for every member def, first ensure Specifier,
-                    then dec*/
-                        Def = GetChild(DefList, 1);
-                        SyntaxTreeNode* DefSpecf = GetChild(Def, 1);
-                        string StrMemberType;
-                        TYPE MemberType;
-                        structItem* MembStructType(NULL);
-                        if(GetChild(DefSpecf, 1)->type == Lexical){
-                            /*base type*/
-                            StrMemberType = string(GetChild(DefSpecf,1)->NodeUnit.LU.IDname);
-                        }
-                        else{
-                            MembStructType = AnlzStruct(DefSpecf, DefItem);
-                        }
-
-                        SyntaxTreeNode* DecList(GetChild(Def, 2));
-                        SyntaxTreeNode* Dec(GetChild(DecList, 1));            
-                        int CountDimension(0);
-                        SyntaxTreeNode* VarDec(GetChild(Dec, 1));
-                        SyntaxTreeNode* VarName(GetChild(VarDec, 1));
-                        while(ChildNumber(VarDec) != 1){
-                            VarDec = GetChild(VarDec, 1);
-                            VarName = GetChild(VarDec, 1);
-                            CountDimension += 1;
-                        }
-                        string MemName(VarName->NodeUnit.LU.IDname);
-                        if(ChildNumber(Dec) == 3){
-                            /*Error type 15 ,initialize member var*/
-                            /*Error but still add this memeber into varList as if Right
-                            Firstly add Error, then Add member*/
-                            SemanticError newError(Dec->lineno, MemName, 15);
-                            ErrorList.AddError(newError);
-                        }
-                        if(CountDimension == 0){
-                        /*this member variable is not an array*/
-                            if(MembStructType == NULL){
-                            /*this Member's type is not struct */ 
-                                MemberType = (StrMemberType == "int"?INT:FLOAT);
-                            }
-                            else
-                                MemberType = STRUCT;
-                        }
-                        else{
-                        /*this member variable is an array*/
-                            if(MembStructType == NULL)
-                                MemberType = (StrMemberType == "int"?INTARRAY:FLOATARRAY);
-                            else
-                                MemberType = STRUCTARRAY; 
-
-                        }    
-                        /*before add, check it*/
-                        if(DefItem->GetMember(MemName) != NULL){
-                            /*error type15, redefine of a struct member*/
-                            SemanticError newError(Dec->lineno, MemName, 15);
-                            ErrorList.AddError(newError);
-                        }
-                        else if(VariableTab.FindItem(MemName) != NULL){
-                            /*error type 3*/
-                            SemanticError newError(Dec->lineno, MemName, 3);
-                            ErrorList.AddError(newError);
-                        }
-                        else{
-                                /*no redefine*/
-                            varItem newMemVar(MemName, MemberType, Dec->lineno, CountDimension);
-                            if(MembStructType != NULL){
-                            /*struct type variable need to set the pointer pointing to this
-                            struct type*/
-                                newMemVar.SetStructType(MembStructType);
-                            }
-                            DefItem->AddMember(newMemVar);
-                            VariableTab.AddItem(newMemVar);
-                        }
-                        
-                        while(ChildNumber(DecList) != 1){
-                        /*repeat what outside and just over this "while" */
-                            DecList = GetChild(DecList, 3);
-                            Dec = GetChild(DecList, 1);
-                            CountDimension = 0;
-                            VarDec = GetChild(Dec,1);
-                            VarName = GetChild(VarDec, 1);
-                            while(ChildNumber(VarDec) != 1){
-                                VarDec = GetChild(VarDec, 1);
-                                VarName = GetChild(VarDec, 1);
-                                CountDimension += 1;
-                            }
-                            MemName = string(VarName->NodeUnit.LU.IDname);
-                            if(ChildNumber(Dec) == 3){
-                            /*Error type 15 ,initialize member var*/
-                            /*Error but still add this memeber into varList as if Right
-                            Firstly add Error, then Add member*/
-                                SemanticError newError(Dec->lineno, MemName, 15);
-                                ErrorList.AddError(newError);
-                            }
-                            if(CountDimension == 0){
-                            /*this member variable is not an array*/
-                                if(MembStructType == NULL){
-                                /*this Member's type is not struct */ 
-                                    MemberType = (StrMemberType == "int"?INT:FLOAT);
-                                }
-                                else
-                                    MemberType = STRUCT;
-                            }
-                            else{
-                            /*this member variable is an array*/
-                                if(MembStructType == NULL)
-                                    MemberType = (StrMemberType == "int"?INTARRAY:FLOATARRAY);
-                                else
-                                    MemberType = STRUCTARRAY; 
-
-                            }    
-                            /*before add, check it*/
-                            if(DefItem->GetMember(MemName) != NULL){
-                            /*error type15, redefine of a struct member*/
-                                SemanticError newError(Dec->lineno, MemName, 15);
-                                ErrorList.AddError(newError);
-                            }
-                            else if(VariableTab.FindItem(MemName) != NULL){
-                            /*error type 3*/
-                                SemanticError newError(Dec->lineno, MemName, 3);
-                                ErrorList.AddError(newError);
-                            }
-                            else{
-                            /*no redefine*/
-                                varItem newMemVar(MemName, MemberType, Dec->lineno, CountDimension);
-                                if(MembStructType != NULL){
-                                /*struct type variable need to set the pointer pointing to this
-                                struct type*/
-                                    newMemVar.SetStructType(MembStructType);
-                                }
-                                DefItem->AddMember(newMemVar);
-                                VariableTab.AddItem(newMemVar);
-                            }
-                        }
-                        
-                        DefList = GetChild(DefList, 2);   
-                    }            
+                    AnlzStruct(structSpecf, DefItem, DefinedStructType);            
                 }
 
 
@@ -382,7 +110,7 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
     SyntaxTreeNode* Def(NULL);
     SyntaxTreeNode* DefSpecf(NULL);
     string StrMemberType;
-    TYPE MemberType;
+    TYPE MemberType(VOID);
     structItem* MembStructType(NULL);
     /*begin check member variable*/
     while(DefList->type != Empty){
@@ -420,30 +148,53 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
                     SubStructName = string("");
                 else
                     SubStructName = string(GetChild(GetChild(SubStructSpecf,2),1)->NodeUnit.LU.IDname);
-                
+                if(StructTab.FindItem(SubStructName) == NULL || SubStructName == "")
+                {/*first define this struct type*/
+                    structItem newStruct(SubStructName, SubStructSpecf->lineno, SubStructSpecf->lineno);
+                    MembStructType = AnlzStruct(SubStructSpecf, &newStruct, UnDefinedStructType); 
+                }
+                else if(StructTab.FindItem(SubStructName) != NULL && StructTab.FindItem(SubStructName)->GetFstDefLine()  == -1){
+                /*declared before, need define now*/
+                    MembStructType = AnlzStruct(SubStructSpecf, StructTab.FindItem(SubStructName), DefinedStructType);
 
-            MembStructType = AnlzStruct(DefSpecf, OwnerStruct);
+                }
+                else{
+                /*redefined struct, error type16 */
+                    SemanticError newError(SubStructSpecf->lineno, SubStructName, 16);
+                    ErrorList.AddError(newError);
+                    DefList = GetChild(DefList, 2);
+                    continue;
+                }
+
+            
             }
         }
 
-        SyntaxTreeNode* DecList(GetChild(Def, 2));
-        SyntaxTreeNode* Dec(GetChild(DecList, 1));            
+        SyntaxTreeNode* DecList(GetChild(Def, 2)); 
+        SyntaxTreeNode* Dec(GetChild(DecList, 1));           
         int CountDimension(0);
         SyntaxTreeNode* VarDec(GetChild(Dec, 1));
         SyntaxTreeNode* VarName(GetChild(VarDec, 1));
+        
         string MemName;
+
         do{
         /*check every MemDec */
-            DecList = GetChild(DecList, 3);
+            
+
+            
             Dec = GetChild(DecList, 1);
+            
             CountDimension = 0;
             VarDec = GetChild(Dec,1);
             VarName = GetChild(VarDec, 1);
+            
             while(ChildNumber(VarDec) != 1){
                 VarDec = GetChild(VarDec, 1);
                 VarName = GetChild(VarDec, 1);
                 CountDimension += 1;
             }
+            
             MemName = string(VarName->NodeUnit.LU.IDname);
             if(ChildNumber(Dec) == 3){
             /*Error type 15 ,initialize member var*/
@@ -452,10 +203,11 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
                 SemanticError newError(Dec->lineno, MemName, 15);
                 ErrorList.AddError(newError);
             }
+            
             if(CountDimension == 0){
             /*this member variable is not an array*/
                 if(MembStructType == NULL){
-                /*this Member's type is not struct */ 
+                /*this Member's type is not struct or a redefined/undefined struct*/ 
                     MemberType = (StrMemberType == "int"?INT:FLOAT);
                 }
                 else
@@ -467,8 +219,8 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
                     MemberType = (StrMemberType == "int"?INTARRAY:FLOATARRAY);
                 else
                     MemberType = STRUCTARRAY; 
-
-            }    
+            }
+               
             /*before add, check it*/
             if(OwnerStruct->GetMember(MemName) != NULL){
             /*error type15, redefine of a struct member*/
@@ -491,10 +243,23 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
                 OwnerStruct->AddMember(newMemVar);
                 VariableTab.AddItem(newMemVar);
             }
+            
+            if(ChildNumber(DecList) == 1)
+                break;
+            DecList = GetChild(DecList, 3);
+            
         }
-        while(ChildNumber(DecList) != 1);
+        while(1);
+        //assert(0); 
         
         DefList = GetChild(DefList, 2);
     }
-    StructTab.AddItem(*OwnerStruct);
+    if(ifDef == UnDefinedStructType){
+        StructTab.AddItem(*OwnerStruct);
+        return StructTab.GetBack();
+    }
+    else{
+        OwnerStruct->SetFstDefLine(StructSpecf->lineno);
+        return OwnerStruct;
+    }
 }

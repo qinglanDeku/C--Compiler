@@ -1,19 +1,21 @@
-int c;
-int b ;
-int d ;
-int m;
-int a(float c);
-int n;
-int inc()
-{
-    int d;
-     /*c = ^k;
-     d= 1;
-    b
-    d = 0;
-    d
-    c = 1;
-    d
-    h = 0;
-    if (a == ) i = 1; else j = 0;*/
-}
+struct s;
+struct c{
+    int b = 8;
+    float d = 1.0;
+    struct s{
+        int bb;
+        float dd;
+        int a;
+        struct ss{
+            int bbb;
+            float ddd;
+            int a;
+            struct sss{
+                int bbbb;
+                float dddd;
+            } eee;
+        } ee;
+    } e;
+    int a;
+};
+struct s;
