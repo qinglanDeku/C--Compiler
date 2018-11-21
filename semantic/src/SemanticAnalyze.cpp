@@ -93,7 +93,88 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
 
     else{
     /*define or declare variable of function*/
+        string SecondNodeName(GetChild(ExtDefNode, 2)->NodeUnit.SU.name);
+        if(SecondNodeName == "ExtDecList"){
+        /*define variable*/
+            SyntaxTreeNode *DefSpecf(GetChild(ExtDefNode, 1));
+            string StrVarType;
+            TYPE varType;
+            structItem* structType(NULL);
+            if(AnlzSpecf(DefSpecf, StrVarType, structType)){
+                SyntaxTreeNode* DecList(GetChild(ExtDefNode, 2)); 
+                SyntaxTreeNode* Dec(GetChild(DecList, 1));           
+                int CountDimension(0);
+                SyntaxTreeNode* VarDec(GetChild(Dec, 1));
+                SyntaxTreeNode* VarName(GetChild(VarDec, 1));
+                
+                string StrVarName;
 
+                do{
+                /*check every MemDec */
+                    
+
+                    
+                    Dec = GetChild(DecList, 1);
+                    
+                    CountDimension = 0;
+                    VarDec = GetChild(Dec,1);
+                    VarName = GetChild(VarDec, 1);
+                    
+                    while(ChildNumber(VarDec) != 1){
+                        VarDec = GetChild(VarDec, 1);
+                        VarName = GetChild(VarDec, 1);
+                        CountDimension += 1;
+                    }
+                    
+                    StrVarName = string(VarName->NodeUnit.LU.IDname);
+                    
+                    if(CountDimension == 0){
+                    /*this member variable is not an array*/
+                        if(structType == NULL){
+                        /*this Member's type is not struct or a redefined/undefined struct*/ 
+                            varType = (StrVarType == "int"?INT:FLOAT);
+                        }
+                        else
+                            varType = STRUCT;
+                    }
+                    else{
+                    /*this member variable is an array*/
+                        if(structType == NULL)
+                            varType = (StrVarType == "int"?INTARRAY:FLOATARRAY);
+                        else
+                            varType = STRUCTARRAY; 
+                    }
+                    
+                    /*before add, check it*/
+                    if(VariableTab.FindItem(StrVarName) != NULL){
+                    /*error type 3*/
+                        SemanticError newError(Dec->lineno, StrVarName, 3);
+                        ErrorList.AddError(newError);
+                    }
+                    else{
+                    /*no redefine*/
+                        varItem newVar(StrVarName, varType, Dec->lineno, CountDimension);
+                        if(structType != NULL){
+                        /*struct type variable need to set the pointer pointing to this
+                        struct type*/
+                            newVar.SetStructType(structType);
+                        }
+                        VariableTab.AddItem(newVar);
+                    }
+                    
+                    if(ChildNumber(DecList) == 1)
+                        break;
+                    DecList = GetChild(DecList, 3);
+                    
+                }
+                while(1);
+            }
+        }
+        else{
+            /*define or declare function*/
+        }
+
+        
     }
 
 
@@ -119,57 +200,13 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
         Def = GetChild(DefList, 1);
         DefSpecf = GetChild(Def, 1);
         
-        if(GetChild(DefSpecf, 1)->type == Lexical){
-            /*base type member*/
-            StrMemberType = string(GetChild(DefSpecf,1)->NodeUnit.LU.IDname);
+        if(!AnlzSpecf(DefSpecf, StrMemberType, MembStructType)){
+            DefList = GetChild(DefList, 2);
+            continue;
         }
-        else{
-            /*struct type member*/
-            SyntaxTreeNode* SubStructSpecf(GetChild(DefSpecf, 1));
-            string SubStructName;
-            if(ChildNumber(SubStructSpecf) == 2){
-            /*nondefined struct or already-defined struct*/
-                SubStructName = string(GetChild(GetChild(SubStructSpecf,2),1)->NodeUnit.LU.IDname);
-                if((StructTab.FindItem(SubStructName) == NULL )||(StructTab.FindItem(SubStructName)->GetFstDefLine() == -1)){
-                    /*no-defined struct,error type17 */
-                    SemanticError newError(SubStructSpecf->lineno, SubStructName, 17);
-                    ErrorList.AddError(newError);
-                    DefList = GetChild(DefList, 2);
-                    continue;
-                }
-
-                else{
-                    MembStructType = StructTab.FindItem(SubStructName);
-                }
-            }
-            else{
-            /* defined whole struct type*/
-                if(GetChild(SubStructSpecf,2)->type == Empty)
-                    SubStructName = string("");
-                else
-                    SubStructName = string(GetChild(GetChild(SubStructSpecf,2),1)->NodeUnit.LU.IDname);
-                if(StructTab.FindItem(SubStructName) == NULL || SubStructName == "")
-                {/*first define this struct type*/
-                    structItem newStruct(SubStructName, SubStructSpecf->lineno, SubStructSpecf->lineno);
-                    MembStructType = AnlzStruct(SubStructSpecf, &newStruct, UnDefinedStructType); 
-                }
-                else if(StructTab.FindItem(SubStructName) != NULL && StructTab.FindItem(SubStructName)->GetFstDefLine()  == -1){
-                /*declared before, need define now*/
-                    MembStructType = AnlzStruct(SubStructSpecf, StructTab.FindItem(SubStructName), DefinedStructType);
-
-                }
-                else{
-                /*redefined struct, error type16 */
-                    SemanticError newError(SubStructSpecf->lineno, SubStructName, 16);
-                    ErrorList.AddError(newError);
-                    DefList = GetChild(DefList, 2);
-                    continue;
-                }
-
+        else
+            ;
             
-            }
-        }
-
         SyntaxTreeNode* DecList(GetChild(Def, 2)); 
         SyntaxTreeNode* Dec(GetChild(DecList, 1));           
         int CountDimension(0);
@@ -262,4 +299,56 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
         OwnerStruct->SetFstDefLine(StructSpecf->lineno);
         return OwnerStruct;
     }
+}
+
+bool Analyze::AnlzSpecf(SyntaxTreeNode* DefSpecf, string &StrType, structItem* &StructType){
+    if(GetChild(DefSpecf, 1)->type == Lexical){
+        /*base type member*/
+        StrType = string(GetChild(DefSpecf,1)->NodeUnit.LU.IDname);
+    }
+    else{
+        /*struct type member*/
+        SyntaxTreeNode* SubStructSpecf(GetChild(DefSpecf, 1));
+        string SubStructName;
+        if(ChildNumber(SubStructSpecf) == 2){
+        /*nondefined struct or already-defined struct*/
+            SubStructName = string(GetChild(GetChild(SubStructSpecf,2),1)->NodeUnit.LU.IDname);
+            if((StructTab.FindItem(SubStructName) == NULL )||(StructTab.FindItem(SubStructName)->GetFstDefLine() == -1)){
+                /*no-defined struct,error type17 */
+                SemanticError newError(SubStructSpecf->lineno, SubStructName, 17);
+                ErrorList.AddError(newError);
+                return false;
+            }
+
+            else{
+                StructType = StructTab.FindItem(SubStructName);
+            }
+        }
+        else{
+        /* defined whole struct type*/
+            if(GetChild(SubStructSpecf,2)->type == Empty)
+                SubStructName = string("");
+            else
+                SubStructName = string(GetChild(GetChild(SubStructSpecf,2),1)->NodeUnit.LU.IDname);
+            if(StructTab.FindItem(SubStructName) == NULL || SubStructName == "")
+            {/*first define this struct type*/
+                structItem newStruct(SubStructName, SubStructSpecf->lineno, SubStructSpecf->lineno);
+                StructType = AnlzStruct(SubStructSpecf, &newStruct, UnDefinedStructType); 
+            }
+            else if(StructTab.FindItem(SubStructName) != NULL && StructTab.FindItem(SubStructName)->GetFstDefLine()  == -1){
+            /*declared before, need define now*/
+                StructType = AnlzStruct(SubStructSpecf, StructTab.FindItem(SubStructName), DefinedStructType);
+
+            }
+            else{
+            /*redefined struct, error type16 */
+                SemanticError newError(SubStructSpecf->lineno, SubStructName, 16);
+                ErrorList.AddError(newError);
+                return false;
+            }
+
+        
+        }
+    }
+    return true;
 }

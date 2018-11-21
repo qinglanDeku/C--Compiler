@@ -9,13 +9,16 @@ struct c{
         struct ss{
             int bbb;
             float ddd;
-            int a;
+            int aa[10][20];
             struct sss{
                 int bbbb;
                 float dddd;
             } eee;
-        } ee;
+        } ee[80];
     } e;
-    int a;
+    struct ss ggg;
+    struct ssss ggggg;
+    float ggggg;
+    int ggggg;
 };
 struct s;
