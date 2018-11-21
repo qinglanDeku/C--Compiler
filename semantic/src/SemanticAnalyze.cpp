@@ -17,7 +17,6 @@ void Analyze::TraverseTree(SyntaxTreeNode* node){
     TraverseTree(node->NextSibling);
 }
 
-//void Analyze::AnlzStructMem(SyntaxTreeNode* SubStructSpecf, structItem* OwnerStruct);
 
 void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
     SyntaxTreeNode* specf = ExtDefNode->child;        //p = Specifier      
