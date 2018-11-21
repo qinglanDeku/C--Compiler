@@ -1,24 +1,2 @@
-struct s;
-struct c{
-    int b = 8;
-    float d = 1.0;
-    struct s{
-        int bb;
-        float dd;
-        int a;
-        struct ss{
-            int bbb;
-            float ddd;
-            int aa[10][20];
-            struct sss{
-                int bbbb;
-                float dddd;
-            } eee;
-        } ee[80];
-    } e;
-    struct ss ggg;
-    struct ssss ggggg;
-    float ggggg;
-    int ggggg;
-};
-struct s;
+
+

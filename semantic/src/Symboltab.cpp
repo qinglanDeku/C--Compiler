@@ -1,6 +1,11 @@
 #include"Symboltab.h"
-
+#include<iostream>
+using std::cout;
+using std::endl;
 /*class varItem*/
+string StrTYPE[7] = {
+    "int", "float", "struct", "intArray", "floatArray", "structArray", "void"
+};
 varItem::varItem(const varItem& a){
     this->name = a.name;
     this->type = a.type;
@@ -27,12 +32,43 @@ void varItem::SetStructType(structItem* type){
     this->structType = type;
 }
 
+void varItem::print(){
+    cout<<"var name:"<<name<<"| "<<"var type:"<<StrTYPE[type]<<"| ";
+    if(type == STRUCT || type == STRUCTARRAY){
+        cout<<"struct name:"<<structType->GetName()<<"| ";
+    }
+    cout<<"dimension:"<<dimension<<"| "<<"define line:"<<lineNo<<endl;
+}
+
 /*************************************************
 class funItem*/
 funItem::funItem(const funItem& a){
     this->name = a.name;
     this->retval = a.retval;
-    this->ArgList.assign(a.ArgList.begin(), a.ArgList.end());
+    this->DefArgList.assign(a.DefArgList.begin(), a.DefArgList.end());
+    this->DecArgList.assign(a.DecArgList.begin(), a.DecArgList.end());
+    this->DecLine = a.DecLine;
+    this->DefLine = a.DefLine;
+}
+
+void funItem::print(){
+    cout<<"func name:"<<name<<" |  "<<"retval type:"<<StrTYPE[retval]<<" |  ";
+    if(retval == STRUCT)
+        cout<<"struct name:"<<retStruct->GetName()<<" |  ";
+    for(int i(0); i < DefArgList.size(); i++){
+        cout<<"arg "<<i + 1<<"type :";
+        if(DecArgList[i] == STRUCT || DecArgList[i] == STRUCTARRAY){
+            cout<<"struct "<<DefArgList[i].GetStructType()->GetName();
+        }
+        else{
+            cout<<StrTYPE[DefArgList[i].GetType()];
+        }
+        for(int j(0); j<DefArgList[i].GetDimension(); j++)
+            cout<<"[]";
+        cout<<"   ";
+    }
+    cout<<" |  ";
+    cout<<"DefLine:"<<DefLine<<endl;
 }
 
 
@@ -83,6 +119,15 @@ const varItem* VarSymbolTab::FindItem(const string &name){
         return &(*it);
 }
 
+void VarSymbolTab::PrintTab(){
+    list<varItem>::iterator it(table.begin());
+    while(it != table.end()){
+        it->print();
+        cout<<"-------------"<<endl;
+        it++;
+    }
+    cout<<"==================================="<<endl;
+}
 
 
 /* *************************************************
@@ -116,6 +161,16 @@ const funItem* FuncSymbolTab::FindItem(const char*name){
         return &(*it);
 }
 
+void FuncSymbolTab::PrintTab(){
+    list<funItem>::iterator it(table.begin());
+    while(it != table.end()){
+        it->print();
+        cout<<"-----------------------"<<endl;
+        it++;
+    }
+    cout<<"============================================="<<endl;
+}
+
 
 
 /****************************************************
@@ -136,6 +191,15 @@ const funItem* FuncSymbolTab::FindItem(const char*name){
         }
     }
     return p;
+ }
+
+ void structItem::print(){
+     cout<<"struct name:"<<name<<" |  " ;
+     for(int i(0); i < MemberVar.size();i++){
+        cout<<"struct Member"<<i+1<<" :";
+        MemberVar[i].print();
+    }
+    cout<<"|  "<<"struct DefLine:"<<FstDefLine<<endl;
  }
 
 
@@ -183,6 +247,16 @@ structItem* structTab::FindItem(const string& name){
         return NULL;
     else
         return &(*it);
+}
+
+void structTab::PrintList(){
+    list<structItem>::iterator it(table.begin());
+    while(it != table.end()){
+        it->print();
+        cout<<"------------------------"<<endl;
+        it++;
+    }
+    cout<<"============================================="<<endl;
 }
 
 

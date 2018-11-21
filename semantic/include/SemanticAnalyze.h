@@ -9,6 +9,15 @@ public:
     void PrintSemanticError(){
         ErrorList.PrintErrorList();
     }
+    void PrintVarSymbolTab(){
+        VariableTab.PrintTab();
+    }
+    void PrintFuncSymbolTab(){
+        FunctionTab.PrintTab();
+    }
+    void PrintStructType(){
+        StructTab.PrintList();
+    }
 private:
 #define DefinedStructType 1
 #define UnDefinedStructType 0

@@ -12,10 +12,6 @@ void Analyze::TraverseTree(SyntaxTreeNode* node){
         if(nodeName == "ExtDef"){
             AnalyzeExtDef(node);
         }
-        /*else if(nodeName == "Def")
-            AnalyzeDef(node);
-        else if(nodeName == "Exp")
-            AnalyzeExp(node);*/
     }
     TraverseTree(node->child);
     TraverseTree(node->NextSibling);
@@ -96,15 +92,16 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
         string SecondNodeName(GetChild(ExtDefNode, 2)->NodeUnit.SU.name);
         if(SecondNodeName == "ExtDecList"){
         /*define variable*/
+            
             SyntaxTreeNode *DefSpecf(GetChild(ExtDefNode, 1));
             string StrVarType;
             TYPE varType;
             structItem* structType(NULL);
             if(AnlzSpecf(DefSpecf, StrVarType, structType)){
-                SyntaxTreeNode* DecList(GetChild(ExtDefNode, 2)); 
-                SyntaxTreeNode* Dec(GetChild(DecList, 1));           
+                
+                SyntaxTreeNode* ExtDecList(GetChild(ExtDefNode, 2));        
                 int CountDimension(0);
-                SyntaxTreeNode* VarDec(GetChild(Dec, 1));
+                SyntaxTreeNode* VarDec(GetChild(ExtDecList, 1));
                 SyntaxTreeNode* VarName(GetChild(VarDec, 1));
                 
                 string StrVarName;
@@ -114,16 +111,18 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
                     
 
                     
-                    Dec = GetChild(DecList, 1);
+                    VarDec = GetChild(ExtDecList, 1);
                     
                     CountDimension = 0;
-                    VarDec = GetChild(Dec,1);
                     VarName = GetChild(VarDec, 1);
                     
                     while(ChildNumber(VarDec) != 1){
+                        
                         VarDec = GetChild(VarDec, 1);
+                        // assert(ChildNumber(VarDec) != 1);
                         VarName = GetChild(VarDec, 1);
                         CountDimension += 1;
+                        
                     }
                     
                     StrVarName = string(VarName->NodeUnit.LU.IDname);
@@ -148,12 +147,12 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
                     /*before add, check it*/
                     if(VariableTab.FindItem(StrVarName) != NULL){
                     /*error type 3*/
-                        SemanticError newError(Dec->lineno, StrVarName, 3);
+                        SemanticError newError(VarDec->lineno, StrVarName, 3);
                         ErrorList.AddError(newError);
                     }
                     else{
                     /*no redefine*/
-                        varItem newVar(StrVarName, varType, Dec->lineno, CountDimension);
+                        varItem newVar(StrVarName, varType, VarDec->lineno, CountDimension);
                         if(structType != NULL){
                         /*struct type variable need to set the pointer pointing to this
                         struct type*/
@@ -162,16 +161,31 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
                         VariableTab.AddItem(newVar);
                     }
                     
-                    if(ChildNumber(DecList) == 1)
+                    if(ChildNumber(ExtDecList) == 1)
                         break;
-                    DecList = GetChild(DecList, 3);
+                    ExtDecList = GetChild(ExtDecList, 3);
                     
                 }
                 while(1);
+                
             }
         }
         else{
             /*define or declare function*/
+            if(GetChild(ExtDefNode, 3)->type == Lexical) {
+            /*this is a Function declaration*/
+                SyntaxTreeNode* RetvalSpecf(GetChild(ExtDefNode, 1));
+                string StrRetType;
+                TYPE retType;
+                structItem* structType(NULL);
+                if(AnlzSpecf(RetvalSpecf, StrRetType, structType)){
+                /*ensure retval and function name and arglist*/
+                }
+            }
+
+            else{
+            /*this is a Function Defination*/
+            }
         }
 
         
@@ -239,6 +253,11 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
             Firstly add Error, then Add member*/
                 SemanticError newError(Dec->lineno, MemName, 15);
                 ErrorList.AddError(newError);
+                if(ChildNumber(DecList) == 1)
+                    break;
+                DecList = GetChild(DecList, 3);
+                continue;
+
             }
             
             if(CountDimension == 0){

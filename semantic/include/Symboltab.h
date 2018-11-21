@@ -12,6 +12,7 @@ enum TYPE{
 };      //all possible type used in c-- language 
 
 
+
 /*variable symbol*/
 class varItem{
 public:
@@ -25,8 +26,10 @@ public:
     const string& GetName(){return name;}
     const TYPE& GetType(){return type;}
     const int& GetLineNo(){return lineNo;}
-    const structItem* GetStructType(){return structType;}
+    const int GetDimension(){return dimension;}
+    structItem* GetStructType(){return structType;}
     void SetStructType(structItem *type);//if Item type is struct
+    void print();
 private:
     string name;
     TYPE type;
@@ -46,16 +49,22 @@ public:
         DecLine(DecLine), DefLine(-1){}
     ~funItem(){}
 
-    void pushArg(TYPE type){ArgList.push_back(type);}             //uncertain
+    void pushDecArg(TYPE type){DecArgList.push_back(type);}             //uncertain
+    void pushDefArg(varItem &arg){DefArgList.push_back(arg);}
     const string& GetName(){return name;}
     const TYPE& GetRetType(){return retval;}
-    const TYPE& GetArg(int No){return ArgList[No - 1];}         //flawed
+    const TYPE& GetDecArg(int No){return DecArgList[No - 1];}         //flawed
+    varItem* GetDefArg(int No){return &DefArgList[No -1];}
     void setDefLine(int line){DefLine = line;}      //sometimes DefLine = DecLine;
+    void print();
+    
 
 private:
     string name;
     TYPE retval;        //return variable
-    vector<TYPE> ArgList;       //arguments list
+    structItem* retStruct;  //if return var is a struct
+    vector<TYPE> DecArgList;       //arguments list,using in declareation
+    vector<varItem> DefArgList;
     int DecLine;        //where declaration of this function shows
     int DefLine;        //where define of the function shows
     
@@ -73,6 +82,7 @@ public:
     void DeleteItem(char* ItemName);
     const varItem* FindItem(const char*name);       //if can't find, return nullptr
     const varItem* FindItem(const string& name);   
+    void PrintTab();
 private:
     list<varItem> table;
 };
@@ -88,6 +98,7 @@ public:
     void AddItem(funItem &item){table.push_back(item);}
     void DeleteItem(char* ItemName);
     const funItem* FindItem(const char*name);
+    void PrintTab();
 private:
     list<funItem> table;
 };
@@ -113,6 +124,7 @@ public:
     int MemberNum() const {return MemberVar.size();}
     const varItem* GetMember(int No){return &MemberVar[No - 1];}
     const varItem* GetMember(const string& name);
+    void print();
 
 private:
     string name;
@@ -131,6 +143,7 @@ public:
     void AddItem(structItem &item){table.push_back(item);}
     void DeleteItem(char *ItemName);
     int TabSize(){return table.size();}
+    void PrintList();
     structItem* GetBack(){
         return &(table.back());
     }
