@@ -100,6 +100,14 @@ SyntaxTreeNode* GetChild(SyntaxTreeNode* parent, int No){
     return pChild;
 }
 
+SyntaxTreeNode* GetNextSibling(SyntaxTreeNode* sibling){
+    return sibling->NextSibling;
+}
+
+char GetNodeType(SyntaxTreeNode* node){
+    return node->type;
+}
+
 void AddSibling(SyntaxTreeNode* Node1, SyntaxTreeNode* Node2){
     Node1->NextSibling = Node2;
 }

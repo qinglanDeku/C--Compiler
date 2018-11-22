@@ -47,10 +47,13 @@ public:
     funItem(const funItem& a);
     funItem(string &funname, TYPE retval, int DecLine):name(funname), retval(retval),\
         DecLine(DecLine), DefLine(-1){}
+    funItem(string &funname, TYPE retval, int DecLine, int DefLine):\
+        name(funname), retval(retval), DecLine(DecLine), DefLine(DefLine){}
     ~funItem(){}
 
     void pushDecArg(TYPE type){DecArgList.push_back(type);}             //uncertain
     void pushDefArg(varItem &arg){DefArgList.push_back(arg);}
+    void SetRetStruct(structItem* structType){retStruct = structType;}
     const string& GetName(){return name;}
     const TYPE& GetRetType(){return retval;}
     const TYPE& GetDecArg(int No){return DecArgList[No - 1];}         //flawed
@@ -97,7 +100,8 @@ public:
     ~FuncSymbolTab(){}
     void AddItem(funItem &item){table.push_back(item);}
     void DeleteItem(char* ItemName);
-    const funItem* FindItem(const char*name);
+    funItem* FindItem(const char*name);
+    funItem* FindItem(const string& name);
     void PrintTab();
 private:
     list<funItem> table;

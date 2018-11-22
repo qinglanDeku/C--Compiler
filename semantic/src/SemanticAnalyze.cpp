@@ -171,20 +171,12 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
         }
         else{
             /*define or declare function*/
-            if(GetChild(ExtDefNode, 3)->type == Lexical) {
-            /*this is a Function declaration*/
-                SyntaxTreeNode* RetvalSpecf(GetChild(ExtDefNode, 1));
-                string StrRetType;
-                TYPE retType;
-                structItem* structType(NULL);
-                if(AnlzSpecf(RetvalSpecf, StrRetType, structType)){
-                /*ensure retval and function name and arglist*/
-                }
-            }
-
-            else{
-            /*this is a Function Defination*/
-            }
+            SyntaxTreeNode* RetvalSpecf(GetChild(ExtDefNode, 1));
+            string StrRetType;
+            TYPE retType;
+            structItem* structType(NULL);
+            AnlzSpecf(RetvalSpecf, StrRetType, structType);
+            AnlzFunc(GetChild(ExtDefNode, 2), retType, structType);
         }
 
         
@@ -369,4 +361,17 @@ bool Analyze::AnlzSpecf(SyntaxTreeNode* DefSpecf, string &StrType, structItem* &
         }
     }
     return true;
+}
+
+void Analyze::AnlzFunc(SyntaxTreeNode* FuncNode, TYPE retType, structItem* structType){
+    SyntaxTreeNode* FuncNameNode(GetChild(FuncNode, 1));
+    string FuncName(FuncNameNode->NodeUnit.LU.IDname);
+    if(GetNodeType(GetNextSibling(FuncNode)) == Lexical){
+    /*this is a func declaration*/
+        
+    }
+
+    else{
+    /*this is a func defination*/ 
+    }
 }

@@ -146,12 +146,25 @@ void FuncSymbolTab::DeleteItem(char* ItemName){
     table.erase(it);
 }
 
-const funItem* FuncSymbolTab::FindItem(const char*name){
+funItem* FuncSymbolTab::FindItem(const char*name){
     string tempname;
     tempname.assign(name);
     list<funItem>::iterator it = table.begin();
     while(it != table.end()){
         if(it->GetName() == tempname)
+            break;
+        it++;
+    }
+    if(it == table.end())
+        return NULL;
+    else
+        return &(*it);
+}
+
+funItem* FuncSymbolTab::FindItem(const string& name){
+    list<funItem>::iterator it = table.begin();
+    while(it != table.end()){
+        if(it->GetName() == name)
             break;
         it++;
     }

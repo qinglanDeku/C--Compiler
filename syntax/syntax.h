@@ -74,6 +74,10 @@ int ChildNumber(SyntaxTreeNode* parent);
 SyntaxTreeNode* GetChild(SyntaxTreeNode* parent, int No);
 //get the number no child
 
+SyntaxTreeNode* GetNextSibling(SyntaxTreeNode* sibling);
+
+char GetNodeType(SyntaxTreeNode* node);
+
 void AddSibling(SyntaxTreeNode* Node1, SyntaxTreeNode* Node2);
 // Set Node2 as Node1's NextSibling
 
