@@ -26,7 +26,8 @@ private:
     void AnalyzeExtDef(SyntaxTreeNode* Node);
     void AnalyzeDef(SyntaxTreeNode* Node);
     void AnalyzeStmt(SyntaxTreeNode* StmtNode);
-    void AnalyzeExp(SyntaxTreeNode* Node);
+    void AnalyzeExp(SyntaxTreeNode* Node, TYPE &ExpType, int &ExpDimension,\
+    structItem* &ExpStructType);
     void AnlzFunc(SyntaxTreeNode* FuncNode, TYPE retType, structItem* structType);
     void AnlzFuncArgList(SyntaxTreeNode* ArgListNode, funItem& func, char AnlyStyle);
     bool AnlzSpecf(SyntaxTreeNode* DefSpecf, string &StrType, structItem* &structType);
@@ -40,6 +41,8 @@ private:
         else
             type = STRUCT;
     }
+
+    varItem* AnalyzeVarDec(SyntaxTreeNode *varDecNode, string &StrType, structItem* structType);
     VarSymbolTab VariableTab;
     FuncSymbolTab FunctionTab;
     structTab StructTab;

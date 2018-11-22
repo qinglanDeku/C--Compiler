@@ -47,8 +47,22 @@ bool varItem::operator== (varItem &a)const {
             return true;
     }
     else if(this->type == STRUCT && this->type == a.type){
-        
+        if(this->structType == a.structType)
+            return true;
+        else{
+            if(*(this->structType) == *(a.structType))
+                return true;
+        } 
     }
+    else if(this->type == STRUCTARRAY &&this->type == a.type){
+        if(this->structType == a.structType && this->dimension == a.dimension)
+            return true;
+        else{
+            if(*(this->structType) == *(a.structType) && this->dimension == a.dimension)
+                return true;
+        }
+    }
+    return false;
 }
 
 /*************************************************

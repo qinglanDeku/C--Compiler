@@ -130,7 +130,7 @@ void SemanticError::SpliceErrorInfo(int lineNo, string ObjectName, int errorNo){
         break;
 
         case 19:
-        errorInfo = "Error Type " + strErrorNo +" at Line  " + strLineNo + ":" \
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
             + errorType[18] + ObjectName + "\"";
         break;
     }

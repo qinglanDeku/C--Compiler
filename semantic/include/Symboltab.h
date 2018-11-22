@@ -16,7 +16,7 @@ enum TYPE{
 /*variable symbol*/
 class varItem{
 public:
-
+    
     varItem(){}
     varItem(const varItem& a);      //all item class need copy construct function
     varItem(string &name, TYPE type, int lineNo, int dimension):name(name), \

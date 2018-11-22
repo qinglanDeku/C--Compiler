@@ -436,6 +436,91 @@ void Analyze::AnlzFunc(SyntaxTreeNode* FuncNode, TYPE retType, structItem* struc
     }
 }
 
+void Analyze::AnlzFuncArgList(SyntaxTreeNode* ArgListNode, funItem& func, char AnlzStyle){
+    SyntaxTreeNode* varList(ArgListNode);
+    SyntaxTreeNode* ParamDec(GetChild(varList, 1));
+    string StrVarType;
+    structItem* structType(NULL);
+    while(1){
+        if(!AnlzSpecf(GetChild(ParamDec, 1), StrVarType,structType)){
+        /*specifier illegal*/
+            if(ChildNumber(varList) == 1)
+                break;
+            else{
+                varList = GetChild(varList, 3);
+                ParamDec = GetChild(varList, 1);
+                continue;
+            }
+        }
+        else{
+            varItem* newArg= AnalyzeVarDec(GetChild(ParamDec, 2), StrVarType, structType);
+            if(newArg == NULL){
+            /*redefined of variable*/
+            }
+            else{
+                func.pushDefArg(*newArg);
+                if(AnlzStyle == AnlzDef)
+                    VariableTab.AddItem(*newArg);
+                delete newArg;
+            }
+            if(ChildNumber(varList) == 1)
+                break;
+            else{
+                varList = GetChild(varList, 3);
+                ParamDec = GetChild(varList, 1);
+                continue;
+            }
+            
+        }
+    }
+}
+
+varItem* Analyze::AnalyzeVarDec(SyntaxTreeNode* varDecNode, string &strType, structItem* structType){
+    int CountDimension = 0;
+    SyntaxTreeNode *VarDec = varDecNode;
+    SyntaxTreeNode *VarName = GetChild(VarDec, 1);
+    string strVarName;
+    TYPE varType(VOID);
+
+    
+    while(ChildNumber(VarDec) != 1){
+        VarDec = GetChild(VarDec, 1);
+        VarName = GetChild(VarDec, 1);
+        CountDimension += 1;
+    }
+    strVarName= string(VarName->NodeUnit.LU.IDname);
+    if(VariableTab.FindItem(strVarName) != NULL){
+    /*error type3*/
+        SemanticError newError(varDecNode->lineno, strVarName, 3);
+        ErrorList.AddError(newError);
+        return NULL;
+    }
+
+    if(strType == "int"){
+        if(CountDimension > 0)
+            varType = INTARRAY;
+        else
+            varType = INT;
+    }
+    else if(strType == "float"){
+        if(CountDimension > 0)
+            varType = FLOATARRAY;
+        else
+            varType = FLOAT;
+    }
+    else{
+        if(CountDimension > 0)
+            varType = STRUCTARRAY;
+        else 
+            varType = STRUCT;
+    }
+    
+    varItem* newVar = new varItem(strVarName, varType, varDecNode->lineno, CountDimension);
+    newVar->SetStructType(structType);
+    return newVar;
+
+}
+
 void Analyze::AnalyzeCompSt(SyntaxTreeNode* CompStNode){
     SyntaxTreeNode* DefListNode(GetChild(CompStNode, 2));
     SyntaxTreeNode* StmtListNode(GetChild(CompStNode, 3));
@@ -446,7 +531,56 @@ void Analyze::AnalyzeCompSt(SyntaxTreeNode* CompStNode){
     }
 
     while(GetNodeType(StmtListNode) != Empty){
-        AnalyzeStmt(GetChild(StmtListNode, 1));
+        //AnalyzeStmt(GetChild(StmtListNode, 1));
         StmtListNode = GetChild(StmtListNode, 2);
     }
 }
+
+
+void Analyze::AnalyzeDef(SyntaxTreeNode* DefNode){
+    SyntaxTreeNode* SpecfNode(GetChild(DefNode, 1));
+    SyntaxTreeNode* DecListNode(GetChild(DefNode, 2));
+    string StrVarType;
+    structItem* VarStructType(NULL);
+    if(AnlzSpecf(SpecfNode, StrVarType, VarStructType)){
+        SyntaxTreeNode *Dec(GetChild(DecListNode, 1));
+        varItem* newVariable(NULL);
+        while(1){
+            newVariable = AnalyzeVarDec(GetChild(Dec, 1), StrVarType, VarStructType);
+            if(ChildNumber(Dec) == 1){
+            /*variable not initialized*/
+                if(newVariable != NULL){
+                    VariableTab.AddItem(*newVariable);
+                    delete newVariable;
+                }
+            }
+            else{
+            /*varaible initialized*/
+                if(newVariable != NULL){
+                    TYPE ExpType(VOID);
+                    int ExpDimension(0);
+                    structItem* ExpStructType(NULL);
+                    AnalyzeExp(GetChild(Dec, 3), ExpType, ExpDimension, ExpStructType);
+
+                }
+                
+            }
+        }
+    }
+}
+
+void Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode, TYPE &ExpType, int &ExpDimension,\
+structItem* &ExpStructType){
+    if(ChildNumber(ExpNode) == 1){
+        SyntaxTreeNode* ExpChild = GetChild(ExpNode, 1);
+        if(ExpChild->NodeUnit.LU.Lextype == LID){
+            string strID(ExpChild->NodeUnit.LU.IDname);
+            if(VariableTab.FindItem(strID) == NULL){
+            /*undefined variable, error type1*/
+            }
+        }
+    }
+}
+
+
+

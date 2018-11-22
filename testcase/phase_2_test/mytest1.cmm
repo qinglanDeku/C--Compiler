@@ -1,0 +1,25 @@
+struct a{
+    int b;
+    int a;
+    int c;
+};
+struct c;
+struct b{
+    int bb;
+    int cc[10];
+    int aa;
+    struct c a;
+    struct d{
+        int aaa;
+        int bbb;
+        int ccc;
+    } e[10];
+
+} ee;
+struct {
+        int aaaa;
+        int bbbb;
+} func(int a, float b);
+
+int func(int a, float b);
+
