@@ -175,7 +175,11 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
             string StrRetType;
             TYPE retType;
             structItem* structType(NULL);
-            AnlzSpecf(RetvalSpecf, StrRetType, structType);
+            if(!AnlzSpecf(RetvalSpecf, StrRetType, structType))
+                retType = VOID;//rettype is wrong
+            else{
+                setRetType(StrRetType, retType);
+            }
             AnlzFunc(GetChild(ExtDefNode, 2), retType, structType);
         }
 
@@ -320,6 +324,7 @@ bool Analyze::AnlzSpecf(SyntaxTreeNode* DefSpecf, string &StrType, structItem* &
         /*struct type member*/
         SyntaxTreeNode* SubStructSpecf(GetChild(DefSpecf, 1));
         string SubStructName;
+        StrType = "struct";
         if(ChildNumber(SubStructSpecf) == 2){
         /*nondefined struct or already-defined struct*/
             SubStructName = string(GetChild(GetChild(SubStructSpecf,2),1)->NodeUnit.LU.IDname);
@@ -368,10 +373,80 @@ void Analyze::AnlzFunc(SyntaxTreeNode* FuncNode, TYPE retType, structItem* struc
     string FuncName(FuncNameNode->NodeUnit.LU.IDname);
     if(GetNodeType(GetNextSibling(FuncNode)) == Lexical){
     /*this is a func declaration*/
+
+        funItem* NewFunc = new funItem(FuncName, retType, FuncNode->lineno);
+        NewFunc->SetRetStruct(structType);
+        if(ChildNumber(FuncNode) == 3);//have no arglist do nothing
+        else
+            AnlzFuncArgList(GetChild(FuncNode, 3), *NewFunc, AnlzDec);
         
+        funItem* result = FunctionTab.FindItem(FuncName);
+        if( result == NULL){
+        /*first declare*/
+            FunctionTab.AddItem(*NewFunc);
+        }
+        else{
+        /*have been defined or declared*/
+            if( *result== *NewFunc)
+            /*just declare, do nothing*/;
+            else{
+            /*error type 19, inconsistent function declaration or definition*/
+                SemanticError newError(FuncNode->lineno, FuncName, 19);
+                ErrorList.AddError(newError);
+            }
+        }
+        delete NewFunc;
     }
 
     else{
     /*this is a func defination*/ 
+        funItem* NewFunc = new funItem(FuncName, retType, FuncNode->lineno, FuncNode->lineno);
+        NewFunc->SetRetStruct(structType);
+        if(ChildNumber(FuncNode) == 3)
+        /*have no arglist, do nothing*/;
+        else
+            AnlzFuncArgList(GetChild(FuncNode, 3), *NewFunc, AnlzDef);
+        
+        funItem* result = FunctionTab.FindItem(FuncName);
+        if(result == NULL){
+        /*have not been defined or declared*/
+            FunctionTab.AddItem(*NewFunc);
+        }
+        else{
+            if(result->NotDef()){
+            /*function not def*/
+                if(*result == *NewFunc){
+                    result->setDefLine(FuncNode->lineno);
+                    result->CopyDefArgList(*NewFunc);    
+                }
+                else{
+                /*error type 19, confilct between function definition and declaration*/
+                    SemanticError NewError(FuncNode->lineno, FuncName, 19);
+                    ErrorList.AddError(NewError);
+                } 
+            }
+
+            else{
+            /*function redefine, error type 4*/
+                SemanticError NewError(FuncNode->lineno, FuncName, 4);
+                ErrorList.AddError(NewError);
+            }
+        }
+        AnalyzeCompSt(GetNextSibling(FuncNode));
+    }
+}
+
+void Analyze::AnalyzeCompSt(SyntaxTreeNode* CompStNode){
+    SyntaxTreeNode* DefListNode(GetChild(CompStNode, 2));
+    SyntaxTreeNode* StmtListNode(GetChild(CompStNode, 3));
+
+    while(GetNodeType(DefListNode) != Empty){
+        AnalyzeDef(GetChild(DefListNode,1));
+        DefListNode = GetChild(DefListNode, 2);
+    }
+
+    while(GetNodeType(StmtListNode) != Empty){
+        AnalyzeStmt(GetChild(StmtListNode, 1));
+        StmtListNode = GetChild(StmtListNode, 2);
     }
 }

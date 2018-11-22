@@ -24,8 +24,8 @@ string SemanticError::errorType[19] = {
     "Redefined field or initialize field \"" /* "variable" */, //error type15
     "Duplicated name \"" /* "struct name"*/, //error type16
     "Undefined structure \"" /* "struct name" */,  //error type17
-    "Inconsistent declaration of function \"" /* "func name" */,  //errortype 18
-    "Declared but Undefined function \""/* "func name" */     //error type19
+    "Declared but Undefined function \""/* "func name" */,  //errortype 18
+    "Inconsistent declaration of function \"" /* "func name" */     //error type19
 
 };
 

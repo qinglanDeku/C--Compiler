@@ -30,6 +30,9 @@ public:
     structItem* GetStructType(){return structType;}
     void SetStructType(structItem *type);//if Item type is struct
     void print();
+    bool operator == (varItem &a) const;        //judge if they are the same type
+    bool operator != (varItem &a) const{return !(*this == a);}
+    
 private:
     string name;
     TYPE type;
@@ -51,22 +54,27 @@ public:
         name(funname), retval(retval), DecLine(DecLine), DefLine(DefLine){}
     ~funItem(){}
 
-    void pushDecArg(TYPE type){DecArgList.push_back(type);}             //uncertain
+    //void pushDecArg(TYPE type){DecArgList.push_back(type);}             //uncertain
     void pushDefArg(varItem &arg){DefArgList.push_back(arg);}
     void SetRetStruct(structItem* structType){retStruct = structType;}
     const string& GetName(){return name;}
     const TYPE& GetRetType(){return retval;}
-    const TYPE& GetDecArg(int No){return DecArgList[No - 1];}         //flawed
+    //const TYPE& GetDecArg(int No){return DecArgList[No - 1];}         //flawed
     varItem* GetDefArg(int No){return &DefArgList[No -1];}
     void setDefLine(int line){DefLine = line;}      //sometimes DefLine = DecLine;
     void print();
-    
+    void CopyDefArgList(funItem& a){
+        this->DefArgList.clear();
+        this->DefArgList.assign(a.DefArgList.begin(), a.DefArgList.end());
+    }
+    bool NotDef(){return DefLine == -1?true:false;}
+    bool operator ==(funItem& a)const;//retval and Arglist are the same
 
 private:
     string name;
     TYPE retval;        //return variable
     structItem* retStruct;  //if return var is a struct
-    vector<TYPE> DecArgList;       //arguments list,using in declareation
+    //vector<TYPE> DecArgList;       //arguments list,using in declareation
     vector<varItem> DefArgList;
     int DecLine;        //where declaration of this function shows
     int DefLine;        //where define of the function shows
@@ -129,6 +137,10 @@ public:
     const varItem* GetMember(int No){return &MemberVar[No - 1];}
     const varItem* GetMember(const string& name);
     void print();
+    bool operator == (structItem &a)const;
+    bool operator !=(structItem &a)const{
+        return !(*this == a);
+    }
 
 private:
     string name;

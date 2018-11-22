@@ -40,13 +40,24 @@ void varItem::print(){
     cout<<"dimension:"<<dimension<<"| "<<"define line:"<<lineNo<<endl;
 }
 
+
+bool varItem::operator== (varItem &a)const {
+    if(this->type != STRUCT && this->type != STRUCTARRAY && this->type == a.type){
+        if(this->dimension == a.dimension)
+            return true;
+    }
+    else if(this->type == STRUCT && this->type == a.type){
+        
+    }
+}
+
 /*************************************************
 class funItem*/
 funItem::funItem(const funItem& a){
     this->name = a.name;
     this->retval = a.retval;
     this->DefArgList.assign(a.DefArgList.begin(), a.DefArgList.end());
-    this->DecArgList.assign(a.DecArgList.begin(), a.DecArgList.end());
+   // this->DecArgList.assign(a.DecArgList.begin(), a.DecArgList.end());
     this->DecLine = a.DecLine;
     this->DefLine = a.DefLine;
 }
@@ -57,7 +68,7 @@ void funItem::print(){
         cout<<"struct name:"<<retStruct->GetName()<<" |  ";
     for(int i(0); i < DefArgList.size(); i++){
         cout<<"arg "<<i + 1<<"type :";
-        if(DecArgList[i] == STRUCT || DecArgList[i] == STRUCTARRAY){
+        if(DefArgList[i].GetType() == STRUCT || DefArgList[i].GetType() == STRUCTARRAY){
             cout<<"struct "<<DefArgList[i].GetStructType()->GetName();
         }
         else{
@@ -69,6 +80,25 @@ void funItem::print(){
     }
     cout<<" |  ";
     cout<<"DefLine:"<<DefLine<<endl;
+}
+
+bool funItem::operator==(funItem& a)const{
+    if(this->retval != a.retval)
+        return false;
+    else if(this->retval == STRUCT)
+        if(this->retStruct != a.retStruct)
+            if(*(this->retStruct) != *(a.retStruct))
+                return false;
+    
+    if(this->DefArgList.size() != a.DefArgList.size())
+        return false;
+    
+    for(int i(0); i < this->DefArgList.size(); i++ ){
+        if(this->DefArgList[i] != a.DefArgList[i])
+            return false;
+    }
+
+    return true;
 }
 
 
@@ -213,6 +243,20 @@ void FuncSymbolTab::PrintTab(){
         MemberVar[i].print();
     }
     cout<<"|  "<<"struct DefLine:"<<FstDefLine<<endl;
+ }
+
+ bool structItem::operator ==(structItem &a)const{
+     if(this->name != a.name){
+        if(this->MemberVar.size() != a.MemberVar.size())
+            return false;
+        else{
+            for(int i(0); i< this->MemberVar.size(); i++){
+                if(this->MemberVar[i] != a.MemberVar[i])
+                    return false;
+            }
+        }
+     }
+     return true;
  }
 
 
