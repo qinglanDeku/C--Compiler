@@ -23,10 +23,12 @@ private:
 #define UnDefinedStructType 0
 #define AnlzDec 0
 #define AnlzDef 1
+#define GLOBAL 0
+#define LOCAL 1     //only analyze varaible in arglist of function
     void AnalyzeExtDef(SyntaxTreeNode* Node);
     void AnalyzeDef(SyntaxTreeNode* Node);
     void AnalyzeStmt(SyntaxTreeNode* StmtNode);
-    void AnalyzeExp(SyntaxTreeNode* Node, TYPE &ExpType, int &ExpDimension,\
+    varItem AnalyzeExp(SyntaxTreeNode* Node, TYPE &ExpType, int &ExpDimension,\
     structItem* &ExpStructType);
     void AnlzFunc(SyntaxTreeNode* FuncNode, TYPE retType, structItem* structType);
     void AnlzFuncArgList(SyntaxTreeNode* ArgListNode, funItem& func, char AnlyStyle);
@@ -42,7 +44,8 @@ private:
             type = STRUCT;
     }
 
-    varItem* AnalyzeVarDec(SyntaxTreeNode *varDecNode, string &StrType, structItem* structType);
+    varItem* AnalyzeVarDec(SyntaxTreeNode *varDecNode, string &StrType, \
+    structItem* structType, int VariableType);
     VarSymbolTab VariableTab;
     FuncSymbolTab FunctionTab;
     structTab StructTab;

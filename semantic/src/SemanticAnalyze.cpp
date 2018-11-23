@@ -453,7 +453,8 @@ void Analyze::AnlzFuncArgList(SyntaxTreeNode* ArgListNode, funItem& func, char A
             }
         }
         else{
-            varItem* newArg= AnalyzeVarDec(GetChild(ParamDec, 2), StrVarType, structType);
+            varItem* newArg= AnalyzeVarDec(GetChild(ParamDec, 2), StrVarType, structType, \
+            (AnlzStyle == AnlzDec?LOCAL:GLOBAL));
             if(newArg == NULL){
             /*redefined of variable*/
             }
@@ -475,7 +476,8 @@ void Analyze::AnlzFuncArgList(SyntaxTreeNode* ArgListNode, funItem& func, char A
     }
 }
 
-varItem* Analyze::AnalyzeVarDec(SyntaxTreeNode* varDecNode, string &strType, structItem* structType){
+varItem* Analyze::AnalyzeVarDec(SyntaxTreeNode* varDecNode, string &strType, \
+structItem* structType, int VariableType){
     int CountDimension = 0;
     SyntaxTreeNode *VarDec = varDecNode;
     SyntaxTreeNode *VarName = GetChild(VarDec, 1);
@@ -489,7 +491,7 @@ varItem* Analyze::AnalyzeVarDec(SyntaxTreeNode* varDecNode, string &strType, str
         CountDimension += 1;
     }
     strVarName= string(VarName->NodeUnit.LU.IDname);
-    if(VariableTab.FindItem(strVarName) != NULL){
+    if(VariableTab.FindItem(strVarName) != NULL && VariableType == GLOBAL){
     /*error type3*/
         SemanticError newError(varDecNode->lineno, strVarName, 3);
         ErrorList.AddError(newError);
@@ -543,11 +545,11 @@ void Analyze::AnalyzeDef(SyntaxTreeNode* DefNode){
     string StrVarType;
     structItem* VarStructType(NULL);
     if(AnlzSpecf(SpecfNode, StrVarType, VarStructType)){
-        SyntaxTreeNode *Dec(GetChild(DecListNode, 1));
+        SyntaxTreeNode *DecNode(GetChild(DecListNode, 1));
         varItem* newVariable(NULL);
         while(1){
-            newVariable = AnalyzeVarDec(GetChild(Dec, 1), StrVarType, VarStructType);
-            if(ChildNumber(Dec) == 1){
+            newVariable = AnalyzeVarDec(GetChild(DecNode, 1), StrVarType, VarStructType, GLOBAL);
+            if(ChildNumber(DecNode) == 1){
             /*variable not initialized*/
                 if(newVariable != NULL){
                     VariableTab.AddItem(*newVariable);
@@ -560,16 +562,20 @@ void Analyze::AnalyzeDef(SyntaxTreeNode* DefNode){
                     TYPE ExpType(VOID);
                     int ExpDimension(0);
                     structItem* ExpStructType(NULL);
-                    AnalyzeExp(GetChild(Dec, 3), ExpType, ExpDimension, ExpStructType);
+                    AnalyzeExp(GetChild(DecNode, 3), ExpType, ExpDimension, ExpStructType);
 
                 }
                 
             }
+            if(ChildNumber(DecListNode) == 1)
+                break;
+            DecListNode = GetChild(DecListNode, 3);
+            DecNode = GetChild(DecListNode, 1);
         }
     }
 }
 
-void Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode, TYPE &ExpType, int &ExpDimension,\
+varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode, TYPE &ExpType, int &ExpDimension,\
 structItem* &ExpStructType){
     if(ChildNumber(ExpNode) == 1){
         SyntaxTreeNode* ExpChild = GetChild(ExpNode, 1);
@@ -577,8 +583,29 @@ structItem* &ExpStructType){
             string strID(ExpChild->NodeUnit.LU.IDname);
             if(VariableTab.FindItem(strID) == NULL){
             /*undefined variable, error type1*/
+                SemanticError newError(ExpNode->lineno, strID, 1);
+                ErrorList.AddError(newError);
+            }
+            else{
+                return *(VariableTab.FindItem(strID));
             }
         }
+        else if(ExpChild->NodeUnit.LU.Lextype == LINT){
+            string ConstInt("ConstInt");
+            varItem constVariable(ConstInt, INT, ExpChild->lineno, 0);
+            return constVariable;
+        }
+        else{
+            string ConstFloat("ConstFloat");
+            varItem constVariable(ConstFloat, FLOAT, ExpChild->lineno, 0);
+            return constVariable;
+        }
+    }
+
+    else if(ChildNumber(ExpNode) == 2){
+    /*three productions*/
+        SyntaxTreeNode *SubExpNode = GetChild(ExpNode, 2);
+        SyntaxTreeNode *OptNode = GetChild(ExpNode, 1);
     }
 }
 

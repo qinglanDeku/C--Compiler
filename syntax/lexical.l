@@ -66,8 +66,8 @@ RB "]"
 LC "{"
 RC "}"
 
-STRUCT "struct "
-RETURN "return " 
+STRUCT "struct"
+RETURN "return" 
 
 IF "if"
 ELSE "else"
