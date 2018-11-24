@@ -584,20 +584,19 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
             /*undefined variable, error type1*/
                 SemanticError newError(ExpNode->lineno, strID, 1);
                 ErrorList.AddError(newError);
-                string UndefName("");
-                return varItem(UndefName, VOID, -1, 0);
+                return varItem("$InvalidID", VOID, -1, 0);
             }
             else{
                 return *(VariableTab.FindItem(strID));
             }
         }
         else if(ExpChild->NodeUnit.LU.Lextype == LINT){
-            string ConstInt("ConstInt");
+            string ConstInt("$ConstInt");
             varItem constVariable(ConstInt, INT, ExpChild->lineno, 0);
             return constVariable;
         }
         else{
-            string ConstFloat("ConstFloat");
+            string ConstFloat("$ConstFloat");
             varItem constVariable(ConstFloat, FLOAT, ExpChild->lineno, 0);
             return constVariable;
         }
@@ -613,10 +612,12 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
             /*error type7, operands mismatch*/
                 SemanticError newError(SubExpNode->lineno, SubExp.GetName(), 7);
                 ErrorList.AddError(newError);
-                return varItem(SubExp.GetName(), VOID, -1, 0);
+                return varItem("$const", VOID, -1, 0);
             }
             else{
-                return SubExp;
+                varItem retVal("$const", SubExp.GetType(), SubExp.GetLineNo(), SubExp.GetDimension());
+                retVal.SetStructType(SubExp.GetStructType());
+                return retVal;
             }
         }
         else{
@@ -624,10 +625,12 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
             /*error type7, operands mismatch*/
                 SemanticError newError(SubExpNode->lineno, SubExp.GetName(), 7);
                 ErrorList.AddError(newError);
-                return varItem(SubExp.GetName(), VOID, -1, 0);
+                return varItem("$const", VOID, -1, 0);
             }
             else{
-                return SubExp;
+                varItem retVal("$const", SubExp.GetType(), SubExp.GetLineNo(), SubExp.GetDimension());
+                retVal.SetStructType(SubExp.GetStructType());
+                return retVal;
             }
         }
     }
@@ -642,7 +645,7 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
                 if(ChildNumber(ExpNode) == 3){
                 /*Exp has no Arg*/
                     if(calledFunc->GetArgListSize() == 0){
-                        varItem retVal(funcName, calledFunc->GetRetType(), ExpNode->lineno, 0);
+                        varItem retVal("$const", calledFunc->GetRetType(), ExpNode->lineno, 0);
                         retVal.SetStructType(calledFunc->GetRetStruct());
                         return retVal;
                     }
@@ -650,7 +653,7 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
                     /*error type9*/
                         SemanticError newErr(ExpNode->lineno, funcName, 9);
                         ErrorList.AddError(newErr);
-                        return varItem(funcName, VOID, -1, 0);
+                        return varItem("$const", VOID, -1, 0);
                     }
                 }
 
@@ -658,12 +661,12 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
                 /*Exp has Arg*/
                     vector<varItem> tempArgList = AnalyzeArgs(GetChild(ExpNode,3));
                     if(tempArgList == calledFunc->GetArgList()){
-                        varItem retVal(funcName, calledFunc->GetRetType(), ExpNode->lineno, 0);
+                        varItem retVal("$const", calledFunc->GetRetType(), ExpNode->lineno, 0);
                         retVal.SetStructType(calledFunc->GetRetStruct());
                         return retVal;
                     }
                     else{
-                        return varItem(funcName, VOID, -1, 0);
+                        return varItem("$const", VOID, -1, 0);
                     }
                 }
             }
@@ -673,13 +676,13 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
                 /*error type11*/
                     SemanticError newErr(fstChildNode->lineno, funcName, 11);
                     ErrorList.AddError(newErr);
-                    return varItem(funcName, VOID, -1, 0);
+                    return varItem("$VarAsFunc", VOID, -1, 0);
                 }
                 else{
                 /*error type2*/
                     SemanticError newErr(fstChildNode->lineno, funcName, 2);
                     ErrorList.AddError(newErr);
-                    return varItem(funcName, VOID, -1 , 0);
+                    return varItem("$unDefFunc", VOID, -1 , 0);
                 }
             }  
         }
@@ -699,7 +702,7 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
                     SemanticError newErr(fstChildNode->lineno, tempExpVar->GetName(), 13);
                     ErrorList.AddError(newErr);
                     delete tempExpVar;
-                    return varItem(string(""), VOID, -1, 0);
+                    return varItem("$error13", VOID, -1, 0);
                 }
                 else{
                     SyntaxTreeNode* IDNode = GetChild(ExpNode, 3);
@@ -710,7 +713,7 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
                         SemanticError newErr(IDNode->lineno, IDname, 14);
                         ErrorList.AddError(newErr);
                         delete tempExpVar;
-                        return varItem(IDname, VOID, -1, 0);
+                        return varItem("$wrongMemb", VOID, -1, 0);
                     }
                     else{
                         delete tempExpVar;
@@ -721,13 +724,109 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
 
             else if(SecChildNode->NodeUnit.LU.Lextype == LLB){
             /*array visit*/
+                SyntaxTreeNode *SubExpNode1(GetChild(ExpNode, 1));
+                SyntaxTreeNode *SubExpNode2(GetChild(ExpNode, 3));
+                varItem Exp1(AnalyzeExp(SubExpNode1));
+                varItem Exp2(AnalyzeExp(SubExpNode2));
+                if(Exp2.GetType() != INT){
+                /*error type12*/
+                    SemanticError *newErr = new SemanticError(SubExpNode2->lineno, Exp2.GetName(), 12);
+                    ErrorList.AddError(*newErr);
+                    delete newErr;
+                    return varItem("$error12", VOID, -1, 0);
+                }
+                if(Exp1.GetDimension() <= 0){
+                /*error type 10, using '[]' on non-array type*/
+                    SemanticError *newErr = new SemanticError(SubExpNode1->lineno, Exp1.GetName(), 10);
+                    ErrorList.AddError(*newErr);
+                    delete newErr;
+                    return varItem("$error10", VOID, -1, 0);
+                }
+                TYPE retType(VOID);
+                if(Exp1.GetDimension() - 1 == 0){
+                    if(Exp1.GetType() == INTARRAY)
+                        retType = INT;
+                    else if(Exp1.GetType() == FLOATARRAY)
+                        retType = FLOAT;
+                    else 
+                        retType = STRUCT;
+                }
+                varItem retval(Exp1.GetName(), retType, Exp1.GetLineNo(), Exp1.GetDimension() - 1);
+                retval.SetStructType(Exp1.GetStructType());
+                return retval;                
             }
+
             else{
             /*two element operators*/
+                SyntaxTreeNode* opNode(GetChild(ExpNode, 2));
+                SyntaxTreeNode* SubExpNode1(GetChild(ExpNode, 1));
+                SyntaxTreeNode* SubExpNode2(GetChild(ExpNode, 3));
+                varItem Exp1(AnalyzeExp(SubExpNode1));
+                varItem Exp2(AnalyzeExp(SubExpNode2));
+                if(opNode->NodeUnit.LU.Lextype == LASSIGNOP){
+                /*Assign operation*/
+                    if(VariableTab.FindItem(Exp1.GetName()) == NULL){
+                    /*check left value failed, error type6*/
+                        SemanticError *newErr = new SemanticError(SubExpNode1->lineno, Exp1.GetName(), 6);
+                        ErrorList.AddError(*newErr);
+                        delete newErr;
+                        return varItem("$error6", VOID, -1, 0);
+                    }
+                    else{
+                    /*type check for both sides*/
+                        if(Exp1 == Exp2){
+                            return Exp1;
+                        }
+                        else{
+                        /*error type5*/
+                            SemanticError *newErr = new SemanticError(ExpNode->lineno, Exp1.GetName(), 5);
+                            ErrorList.AddError(*newErr);
+                            delete newErr;
+                            return varItem("$error5", VOID, -1, 0);
+                        }
+                    }
+                }
+
+                else if(opNode->NodeUnit.LU.Lextype == LAND || \
+                opNode->NodeUnit.LU.Lextype == LOR || \
+                opNode->NodeUnit.LU.Lextype == LRELOP){
+                /*logical arithmetic*/
+                    if(Exp1.GetType() != INT || Exp2.GetType() != INT){
+                    /*error type7*/
+                        SemanticError *newErr = new SemanticError(SubExpNode1->lineno, Exp1.GetName(), 7);
+                        ErrorList.AddError(*newErr);
+                        delete newErr;
+                        return varItem("$error7", VOID, -1, 0);
+                    }
+                    else{
+                        return varItem("$constInt", INT, SubExpNode1->lineno, 0);
+                    }
+                }
+
+                else{
+                /*plus add subtract and divide*/
+                    if(Exp1.GetType() == INT && Exp1.GetType() == Exp2.GetType()){
+                        return varItem("$constInt", INT, SubExpNode1->lineno, 0);
+                    }
+                    else if(Exp1.GetType() == FLOAT && Exp1.GetType() == Exp2.GetType()){
+                        return varItem("$constFloat", FLOAT, SubExpNode1->lineno, 0);
+                    }
+                    else{
+                    /*error type 7*/
+                        SemanticError *newErr = new SemanticError(ExpNode->lineno, Exp1.GetName(), 7);
+                        ErrorList.AddError(*newErr);
+                        delete newErr;
+                        return varItem("$error7", VOID, -1, 0);
+                    }
+                }
+
+
             }
         }
     }
 }
+
+vector<varItem> Analyze::AnalyzeArgs(SyntaxTreeNode* ArgsNode){}
 
 
 

@@ -42,24 +42,24 @@ void varItem::print() const{
 }
 
 
-bool varItem::operator== (varItem &a) {
-    if(this->type != STRUCT && this->type != STRUCTARRAY && this->type == a.type){
-        if(this->dimension == a.dimension)
+bool operator== (const varItem &a, const varItem &b) {
+    if(a.type != STRUCT && a.type != STRUCTARRAY && a.type == b.type){
+        if(a.dimension == b.dimension)
             return true;
     }
-    else if(this->type == STRUCT && this->type == a.type){
-        if(this->structType == a.structType)
+    else if(a.type == STRUCT && a.type == b.type){
+        if(a.structType == b.structType)
             return true;
         else{
-            if(*(this->structType) == *(a.structType))
+            if(*(a.structType) == *(b.structType))
                 return true;
         } 
     }
-    else if(this->type == STRUCTARRAY &&this->type == a.type){
-        if(this->structType == a.structType && this->dimension == a.dimension)
+    else if(a.type == STRUCTARRAY &&a.type == b.type){
+        if(a.structType == b.structType && a.dimension == b.dimension)
             return true;
         else{
-            if(*(this->structType) == *(a.structType) && this->dimension == a.dimension)
+            if(*(a.structType) == *(b.structType) && a.dimension == b.dimension)
                 return true;
         }
     }

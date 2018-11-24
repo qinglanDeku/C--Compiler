@@ -30,7 +30,7 @@ public:
     structItem* GetStructType(){return structType;}
     void SetStructType(structItem *type);//if Item type is struct
     void print() const;
-    bool operator == (varItem &a) ;        //judge if they are the same type
+    friend bool operator == (const varItem &a, const varItem &b) ;        //judge if they are the same type
     bool operator != (varItem &a) {return !(*this == a);}
     
 private:
@@ -70,7 +70,7 @@ public:
     structItem *GetRetStruct(){return retStruct;}
     bool NotDef(){return DefLine == -1?true:false;}
     int GetArgListSize(){return DefArgList.size();}
-    vector<varItem>& GetArgList() const{return DefArgList;}
+    const vector<varItem>& GetArgList() {return DefArgList;}
     bool operator ==(funItem& a);//retval and Arglist are the same
 
 private:
