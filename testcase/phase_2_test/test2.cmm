@@ -1,0 +1,14 @@
+int inc(int b);
+int main()
+{
+    int i = 0;
+    inc(i);
+    inc();
+    dec(i);
+    return 0;
+}
+int inc(int b){
+    return b + 1;
+}
+int func();
+int func(int v);

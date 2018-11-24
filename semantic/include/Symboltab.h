@@ -6,6 +6,8 @@ using std::string;
 using std::vector;
 using std::list;
 
+class Analyze;
+
 class structItem;
 enum TYPE{
     INT, FLOAT, STRUCT, INTARRAY, FLOATARRAY, STRUCTARRAY, VOID
@@ -69,6 +71,7 @@ public:
     }
     structItem *GetRetStruct(){return retStruct;}
     bool NotDef(){return DefLine == -1?true:false;}
+    int GetDecLine(){return DecLine;}
     int GetArgListSize(){return DefArgList.size();}
     const vector<varItem>& GetArgList() {return DefArgList;}
     bool operator ==(funItem& a);//retval and Arglist are the same
@@ -107,6 +110,7 @@ private:
 /*function table*/
 class FuncSymbolTab{
 public:
+friend class Analyze;
     FuncSymbolTab(){}
     ~FuncSymbolTab(){}
     void AddItem(funItem &item){table.push_back(item);}
@@ -157,6 +161,7 @@ private:
 /*struct table*/
 class structTab{
 public:
+friend class Analyze;
     structTab(){}
     ~structTab(){}
     void AddItem(structItem &item){table.push_back(item);}

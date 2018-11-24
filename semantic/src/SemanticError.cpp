@@ -7,7 +7,7 @@ using std::endl;
 /************************************
  class SemanticError*/
 
-string SemanticError::errorType[19] = {
+string SemanticError::errorType[20] = {
     "Undefined variable \""/*variable*/,      //error type1
     "Undefined function \""/*variable*/,      //error type2
     "Redefined variable \""/*variable*/,      //error type3
@@ -26,7 +26,9 @@ string SemanticError::errorType[19] = {
     "Duplicated name \"" /* "struct name"*/, //error type16
     "Undefined structure \"" /* "struct name" */,  //error type17
     "Declared but Undefined function \""/* "func name" */,  //errortype 18
-    "Inconsistent declaration of function \"" /* "func name" */     //error type19
+    "Inconsistent declaration of function \"" /* "func name" */,     //error type19
+    "Type mismatched for Conditional judgement." //error type 20
+    
 
 };
 
@@ -82,7 +84,7 @@ void SemanticError::SpliceErrorInfo(int lineNo, string ObjectName, int errorNo){
 
         case 9:
         errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
-        +ObjectName + errorType[8];
+        +"\""+ObjectName + errorType[8];
         break;
 
         case 10:
@@ -133,6 +135,10 @@ void SemanticError::SpliceErrorInfo(int lineNo, string ObjectName, int errorNo){
         case 19:
         errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" \
             + errorType[18] + ObjectName + "\"";
+        break;
+
+        case 20:
+        errorInfo = "Error Type " + strErrorNo +" at Line " + strLineNo + ":" +errorType[19];
         break;
     }
 }

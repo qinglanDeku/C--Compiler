@@ -1,0 +1,37 @@
+int func(int i)
+{
+    return i;
+}
+
+int func()
+{
+    return 0;
+}
+
+float func()
+{
+    return 1;
+}
+
+struct{
+    int a;
+    int b;
+} func2(){
+    struct a {
+        int aa;
+        int bb;
+    }temp;
+    return temp;
+}
+
+struct a func3(){
+    struct{
+        int c;
+        float d;
+    } temp2;
+    return temp2;
+}
+
+int main()
+{
+}

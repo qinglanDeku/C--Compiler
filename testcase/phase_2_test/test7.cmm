@@ -1,0 +1,16 @@
+int main()
+{
+    float j;
+    10 + j;
+    if (2)
+        return 2;
+    if(10 + j){
+        return 10 + j;
+    }
+    else{
+        if(1)
+            return 1;
+        else 
+            return 2;
+    }
+}

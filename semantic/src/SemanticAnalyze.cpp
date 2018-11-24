@@ -248,10 +248,10 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
             Firstly add Error, then Add member*/
                 SemanticError newError(Dec->lineno, MemName, 15);
                 ErrorList.AddError(newError);
-                if(ChildNumber(DecList) == 1)
+                /*if(ChildNumber(DecList) == 1)
                     break;
                 DecList = GetChild(DecList, 3);
-                continue;
+                continue;*/
 
             }
             
@@ -283,7 +283,7 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
                 SemanticError newError(Dec->lineno, MemName, 3);
                 ErrorList.AddError(newError);
             }
-            else{
+            //else{
             /*no redefine*/
                 varItem newMemVar(MemName, MemberType, Dec->lineno, CountDimension);
                 if(MembStructType != NULL){
@@ -293,7 +293,7 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
                 }
                 OwnerStruct->AddMember(newMemVar);
                 VariableTab.AddItem(newMemVar);
-            }
+            //}
             
             if(ChildNumber(DecList) == 1)
                 break;
@@ -411,12 +411,13 @@ void Analyze::AnlzFunc(SyntaxTreeNode* FuncNode, TYPE retType, structItem* struc
         if(result == NULL){
         /*have not been defined or declared*/
             FunctionTab.AddItem(*NewFunc);
+            result = FunctionTab.FindItem(FuncName);
         }
         else{
             if(result->NotDef()){
             /*function not def*/
-                if(*result == *NewFunc){
-                    result->setDefLine(FuncNode->lineno);
+                result->setDefLine(FuncNode->lineno);
+                if(*result == *NewFunc){      
                     result->CopyDefArgList(*NewFunc);    
                 }
                 else{
@@ -432,7 +433,8 @@ void Analyze::AnlzFunc(SyntaxTreeNode* FuncNode, TYPE retType, structItem* struc
                 ErrorList.AddError(NewError);
             }
         }
-        AnalyzeCompSt(GetNextSibling(FuncNode));
+        AnalyzeCompSt(GetNextSibling(FuncNode), NewFunc);
+        delete NewFunc;
     }
 }
 
@@ -455,15 +457,16 @@ void Analyze::AnlzFuncArgList(SyntaxTreeNode* ArgListNode, funItem& func, char A
         else{
             varItem* newArg= AnalyzeVarDec(GetChild(ParamDec, 2), StrVarType, structType, \
             (AnlzStyle == AnlzDec?LOCAL:GLOBAL));
-            if(newArg == NULL){
+            //if(newArg == NULL){
             /*redefined of variable*/
-            }
-            else{
+                
+            //}
+            //else{
                 func.pushDefArg(*newArg);
                 if(AnlzStyle == AnlzDef)
                     VariableTab.AddItem(*newArg);
                 delete newArg;
-            }
+            //}
             if(ChildNumber(varList) == 1)
                 break;
             else{
@@ -495,7 +498,7 @@ structItem* structType, int VariableType){
     /*error type3*/
         SemanticError newError(varDecNode->lineno, strVarName, 3);
         ErrorList.AddError(newError);
-        return NULL;
+        //return NULL;
     }
 
     if(strType == "int"){
@@ -523,7 +526,7 @@ structItem* structType, int VariableType){
 
 }
 
-void Analyze::AnalyzeCompSt(SyntaxTreeNode* CompStNode){
+void Analyze::AnalyzeCompSt(SyntaxTreeNode* CompStNode, funItem* FatherFunc){
     SyntaxTreeNode* DefListNode(GetChild(CompStNode, 2));
     SyntaxTreeNode* StmtListNode(GetChild(CompStNode, 3));
 
@@ -533,8 +536,73 @@ void Analyze::AnalyzeCompSt(SyntaxTreeNode* CompStNode){
     }
 
     while(GetNodeType(StmtListNode) != Empty){
-        //AnalyzeStmt(GetChild(StmtListNode, 1));
+        AnalyzeStmt(GetChild(StmtListNode, 1), FatherFunc);
         StmtListNode = GetChild(StmtListNode, 2);
+    }
+}
+
+void Analyze::AnalyzeStmt(SyntaxTreeNode* StmtNode, funItem* FatherFunc){
+    int ChildrenNum = ChildNumber(StmtNode);
+    if(ChildrenNum == 1){
+        AnalyzeCompSt(GetChild(StmtNode, 1), FatherFunc);
+    }
+    else if(ChildrenNum == 2){
+        AnalyzeExp(GetChild(StmtNode, 1));
+    }
+    else if(ChildrenNum == 3){
+        varItem * tempVar = new varItem(AnalyzeExp(GetChild(StmtNode, 2)));
+        if(tempVar->GetType() != FatherFunc->GetRetType()){
+        /*error type8*/
+            SemanticError *newError = new SemanticError(StmtNode->lineno, FatherFunc->GetName(), 8);
+            ErrorList.AddError(*newError);
+            delete newError;
+        }
+        else{
+            if(tempVar->GetType() == STRUCT){
+                if(tempVar->GetStructType() != FatherFunc->GetRetStruct())
+                    if(*(tempVar->GetStructType()) != *(FatherFunc->GetRetStruct())){
+                    /*error type 8*/
+                        SemanticError *newErr = new SemanticError(StmtNode->lineno, FatherFunc->GetName(), 8);
+                        ErrorList.AddError(*newErr);
+                        delete newErr;
+                    }
+            }
+        }
+    }
+    else {
+        SyntaxTreeNode* fstChild(GetChild(StmtNode, 1));
+        if(fstChild->NodeUnit.LU.Lextype == LIF){
+            varItem *ExpVar = new varItem(AnalyzeExp(GetChild(StmtNode, 3)));
+            if(ExpVar->GetType() != INT){
+                /*error type 20*/
+                    SemanticError *newErr = new SemanticError(fstChild->lineno, "", 20);
+                    ErrorList.AddError(*newErr);
+                    delete newErr;
+            }
+            delete ExpVar;
+            if(ChildNumber(StmtNode) == 5){
+            /*if-without-else*/
+
+                AnalyzeStmt(GetChild(StmtNode, 5), FatherFunc);
+            }
+            else{
+            /*if-else*/
+                AnalyzeStmt(GetChild(StmtNode, 5), FatherFunc);
+                AnalyzeStmt(GetChild(StmtNode, 7), FatherFunc);
+            }
+        }
+        else{
+        /*while stmt*/
+            varItem *ExpVar = new varItem(AnalyzeExp(GetChild(StmtNode, 3)));
+            if(ExpVar->GetType() != INT){
+                /*error type 20*/
+                    SemanticError *newErr = new SemanticError(fstChild->lineno, "", 20);
+                    ErrorList.AddError(*newErr);
+                    delete newErr;
+            }
+            delete ExpVar;
+            AnalyzeStmt(GetChild(StmtNode, 5), FatherFunc);
+        }
     }
 }
 
@@ -562,7 +630,34 @@ void Analyze::AnalyzeDef(SyntaxTreeNode* DefNode){
                     /*TYPE ExpType(VOID);
                     int ExpDimension(0);
                     structItem* ExpStructType(NULL);*/
-                    AnalyzeExp(GetChild(DecNode, 3));
+                    varItem *tempVar = new varItem(AnalyzeExp(GetChild(DecNode, 3)));
+                    /*if(tempVar->GetType() != newVariable->GetType()){
+                    /*error type 5
+                        SemanticError *newErr = new SemanticError(DefNode->lineno, "", 5);
+                        ErrorList.AddError(*newErr);
+                        delete newErr;
+                    }
+                    else{
+                        if(tempVar->GetType() == STRUCT){
+                            if(tempVar->GetStructType() != newVariable->GetStructType())
+                                if(*(tempVar->GetStructType()) != *(newVariable->GetStructType())){
+                                    SemanticError *newErr = new SemanticError(DefNode->lineno, "", 5);
+                                    ErrorList.AddError(*newErr);
+                                    delete newErr;
+                                }
+                        }
+                    }*/
+                    if(*tempVar!= *newVariable){
+                    /*error type 5*/
+                        SemanticError *newErr = new SemanticError(DefNode->lineno, "", 5);
+                        ErrorList.AddError(*newErr);
+                        delete newErr;
+                    }
+                    else{
+                        
+                    }
+                    VariableTab.AddItem(*newVariable);
+                    delete newVariable;
 
                 }
                 
@@ -584,7 +679,7 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
             /*undefined variable, error type1*/
                 SemanticError newError(ExpNode->lineno, strID, 1);
                 ErrorList.AddError(newError);
-                return varItem("$InvalidID", VOID, -1, 0);
+                return varItem("$error1", VOID, -1, 0);
             }
             else{
                 return *(VariableTab.FindItem(strID));
@@ -659,13 +754,20 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
 
                 else{
                 /*Exp has Arg*/
-                    vector<varItem> tempArgList = AnalyzeArgs(GetChild(ExpNode,3));
-                    if(tempArgList == calledFunc->GetArgList()){
+                    vector<varItem> *tempArgList = AnalyzeArgs(GetChild(ExpNode,3));
+                    assert(tempArgList->size() != 0);
+                    if(*tempArgList == calledFunc->GetArgList()){
                         varItem retVal("$const", calledFunc->GetRetType(), ExpNode->lineno, 0);
                         retVal.SetStructType(calledFunc->GetRetStruct());
+                        delete tempArgList;
                         return retVal;
                     }
                     else{
+                    /*error type9*/
+                        SemanticError *newErr = new SemanticError(ExpNode->lineno, funcName, 9);
+                        ErrorList.AddError(*newErr);
+                        delete newErr;
+                        delete tempArgList;
                         return varItem("$const", VOID, -1, 0);
                     }
                 }
@@ -750,10 +852,15 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
                         retType = FLOAT;
                     else 
                         retType = STRUCT;
+                    varItem retval(Exp1.GetName(), retType, Exp1.GetLineNo(), Exp1.GetDimension() - 1);
+                    retval.SetStructType(Exp1.GetStructType());
+                    return retval;
                 }
-                varItem retval(Exp1.GetName(), retType, Exp1.GetLineNo(), Exp1.GetDimension() - 1);
-                retval.SetStructType(Exp1.GetStructType());
-                return retval;                
+                else{
+                    varItem retval(Exp1.GetName(), Exp1.GetType(), Exp1.GetLineNo(), Exp1.GetDimension() - 1);
+                    retval.SetStructType(Exp1.GetStructType());
+                    return retval;
+                }     
             }
 
             else{
@@ -826,7 +933,35 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
     }
 }
 
-vector<varItem> Analyze::AnalyzeArgs(SyntaxTreeNode* ArgsNode){}
+vector<varItem>* Analyze::AnalyzeArgs(SyntaxTreeNode* ArgsNode){
+    SyntaxTreeNode* argsNode(ArgsNode);
+    SyntaxTreeNode* ExpNode(GetChild(argsNode, 1));
+    vector<varItem> *retVec = new vector<varItem>;
+    while(1){
+        varItem *retVar = new varItem(AnalyzeExp(ExpNode));
+        retVec->push_back(*retVar);
+        delete retVar;
+        if(ChildNumber(argsNode) == 1){
+            break;
+        }
+        argsNode = GetChild(argsNode, 3);
+        ExpNode = GetChild(argsNode, 1);
+    }
+    return retVec;
+}
+
+void Analyze::CheckFunTab(){
+    list<funItem>::iterator it = FunctionTab.table.begin();
+    while(it != FunctionTab.table.end()){
+        if(it->NotDef()){
+        /*error type 2*/
+            SemanticError *newErr  = new SemanticError(it->GetDecLine(), it->GetName(), 2);
+            ErrorList.AddError(*newErr);
+            delete newErr;
+        }
+        it++;
+    }
+}
 
 
 

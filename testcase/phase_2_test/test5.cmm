@@ -1,0 +1,11 @@
+int inc(int i);
+int main()
+{
+    int i;
+    i = 3.7;
+    inc(i);
+}
+
+int inc(int b){
+    return b+1;
+}

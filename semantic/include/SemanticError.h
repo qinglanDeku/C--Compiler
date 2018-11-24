@@ -7,7 +7,7 @@ using std::vector;
 
 class SemanticError{
 public:
-    static string errorType[19];        //initial in cpp, include 17 types
+    static string errorType[20];        //initial in cpp, include 17 types
     SemanticError(){}
     SemanticError(const SemanticError& a):lineNo(a.lineNo), ObjectName(a.ObjectName),\
         errorNo(a.errorNo), errorInfo(a.errorInfo){}
