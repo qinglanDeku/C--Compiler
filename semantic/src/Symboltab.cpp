@@ -253,7 +253,7 @@ void FuncSymbolTab::PrintTab(){
      this->MemberVar.assign(a.MemberVar.begin(), a.MemberVar.end());
  }
 
- const varItem* structItem::GetMember(const string& name){
+varItem* structItem::GetMember(const string& name){
     varItem* p = NULL;
     for(int i(0); i<MemberVar.size(); i++){
         if(MemberVar[i].GetName() == name){

@@ -11,7 +11,7 @@ public:
     SemanticError(){}
     SemanticError(const SemanticError& a):lineNo(a.lineNo), ObjectName(a.ObjectName),\
         errorNo(a.errorNo), errorInfo(a.errorInfo){}
-    SemanticError(int lineNo, string &ObjectName, int errorNo):\
+    SemanticError(int lineNo, string ObjectName, int errorNo):\
         lineNo(lineNo), ObjectName(ObjectName), errorNo(errorNo){
             SpliceErrorInfo(this->lineNo, this->ObjectName, this->errorNo);
         }

@@ -19,13 +19,13 @@ public:
     
     varItem(){}
     varItem(const varItem& a);      //all item class need copy construct function
-    varItem(string &name, TYPE type, int lineNo, int dimension):name(name), \
+    varItem(string name, TYPE type, int lineNo, int dimension):name(name), \
     type(type), lineNo(lineNo), dimension(dimension), structType(NULL){}
     ~varItem(){}
 
-    const string& GetName(){return name;}
-    const TYPE& GetType(){return type;}
-    const int& GetLineNo(){return lineNo;}
+    string GetName(){return name;}
+    const TYPE GetType(){return type;}
+    const int GetLineNo(){return lineNo;}
     const int GetDimension(){return dimension;}
     structItem* GetStructType(){return structType;}
     void SetStructType(structItem *type);//if Item type is struct
@@ -67,7 +67,10 @@ public:
         this->DefArgList.clear();
         this->DefArgList.assign(a.DefArgList.begin(), a.DefArgList.end());
     }
+    structItem *GetRetStruct(){return retStruct;}
     bool NotDef(){return DefLine == -1?true:false;}
+    int GetArgListSize(){return DefArgList.size();}
+    vector<varItem>& GetArgList() const{return DefArgList;}
     bool operator ==(funItem& a);//retval and Arglist are the same
 
 private:
@@ -134,8 +137,8 @@ public:
     void SetFstDefLine(int FstDefLine){this->FstDefLine = FstDefLine;}
     int GetFstDefLine() const {return this->FstDefLine;}
     int MemberNum() const {return MemberVar.size();}
-    const varItem* GetMember(int No){return &MemberVar[No - 1];}
-    const varItem* GetMember(const string& name);
+    varItem* GetMember(int No){return &MemberVar[No - 1];}
+    varItem* GetMember(const string& name);
     void print() const;
     bool operator == (structItem &a);
     bool operator !=(structItem &a){

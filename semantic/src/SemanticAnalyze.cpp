@@ -559,10 +559,10 @@ void Analyze::AnalyzeDef(SyntaxTreeNode* DefNode){
             else{
             /*varaible initialized*/
                 if(newVariable != NULL){
-                    TYPE ExpType(VOID);
+                    /*TYPE ExpType(VOID);
                     int ExpDimension(0);
-                    structItem* ExpStructType(NULL);
-                    AnalyzeExp(GetChild(DecNode, 3), ExpType, ExpDimension, ExpStructType);
+                    structItem* ExpStructType(NULL);*/
+                    AnalyzeExp(GetChild(DecNode, 3));
 
                 }
                 
@@ -575,8 +575,7 @@ void Analyze::AnalyzeDef(SyntaxTreeNode* DefNode){
     }
 }
 
-varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode, TYPE &ExpType, int &ExpDimension,\
-structItem* &ExpStructType){
+varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
     if(ChildNumber(ExpNode) == 1){
         SyntaxTreeNode* ExpChild = GetChild(ExpNode, 1);
         if(ExpChild->NodeUnit.LU.Lextype == LID){
@@ -585,6 +584,8 @@ structItem* &ExpStructType){
             /*undefined variable, error type1*/
                 SemanticError newError(ExpNode->lineno, strID, 1);
                 ErrorList.AddError(newError);
+                string UndefName("");
+                return varItem(UndefName, VOID, -1, 0);
             }
             else{
                 return *(VariableTab.FindItem(strID));
@@ -606,6 +607,125 @@ structItem* &ExpStructType){
     /*three productions*/
         SyntaxTreeNode *SubExpNode = GetChild(ExpNode, 2);
         SyntaxTreeNode *OptNode = GetChild(ExpNode, 1);
+        varItem SubExp = AnalyzeExp(SubExpNode);
+        if(OptNode->NodeUnit.LU.Lextype == LNOT){
+            if(SubExp.GetType() != INT){
+            /*error type7, operands mismatch*/
+                SemanticError newError(SubExpNode->lineno, SubExp.GetName(), 7);
+                ErrorList.AddError(newError);
+                return varItem(SubExp.GetName(), VOID, -1, 0);
+            }
+            else{
+                return SubExp;
+            }
+        }
+        else{
+            if(SubExp.GetType() != INT && SubExp.GetType() != FLOAT){
+            /*error type7, operands mismatch*/
+                SemanticError newError(SubExpNode->lineno, SubExp.GetName(), 7);
+                ErrorList.AddError(newError);
+                return varItem(SubExp.GetName(), VOID, -1, 0);
+            }
+            else{
+                return SubExp;
+            }
+        }
+    }
+    else{
+        SyntaxTreeNode *fstChildNode = GetChild(ExpNode, 1);
+        if(fstChildNode->type == Lexical && fstChildNode->NodeUnit.LU.Lextype == LID){
+        /*call function*/
+            string funcName(fstChildNode->NodeUnit.LU.IDname);
+            funItem* calledFunc(FunctionTab.FindItem(funcName));
+            if(calledFunc != NULL){
+            /*find func, then check ArgList*/
+                if(ChildNumber(ExpNode) == 3){
+                /*Exp has no Arg*/
+                    if(calledFunc->GetArgListSize() == 0){
+                        varItem retVal(funcName, calledFunc->GetRetType(), ExpNode->lineno, 0);
+                        retVal.SetStructType(calledFunc->GetRetStruct());
+                        return retVal;
+                    }
+                    else{
+                    /*error type9*/
+                        SemanticError newErr(ExpNode->lineno, funcName, 9);
+                        ErrorList.AddError(newErr);
+                        return varItem(funcName, VOID, -1, 0);
+                    }
+                }
+
+                else{
+                /*Exp has Arg*/
+                    vector<varItem> tempArgList = AnalyzeArgs(GetChild(ExpNode,3));
+                    if(tempArgList == calledFunc->GetArgList()){
+                        varItem retVal(funcName, calledFunc->GetRetType(), ExpNode->lineno, 0);
+                        retVal.SetStructType(calledFunc->GetRetStruct());
+                        return retVal;
+                    }
+                    else{
+                        return varItem(funcName, VOID, -1, 0);
+                    }
+                }
+            }
+            else{
+            /*not find func*/
+                if(VariableTab.FindItem(funcName) != NULL){
+                /*error type11*/
+                    SemanticError newErr(fstChildNode->lineno, funcName, 11);
+                    ErrorList.AddError(newErr);
+                    return varItem(funcName, VOID, -1, 0);
+                }
+                else{
+                /*error type2*/
+                    SemanticError newErr(fstChildNode->lineno, funcName, 2);
+                    ErrorList.AddError(newErr);
+                    return varItem(funcName, VOID, -1 , 0);
+                }
+            }  
+        }
+
+        else if(fstChildNode->type == Lexical && fstChildNode->NodeUnit.LU.Lextype == LLP){
+        /*exp like "(a + b)"*/
+            SyntaxTreeNode* subExpNode(GetChild(ExpNode, 2));
+            return AnalyzeExp(subExpNode);
+        }
+        else{
+            SyntaxTreeNode* SecChildNode(GetChild(ExpNode, 2));
+            if(SecChildNode->NodeUnit.LU.Lextype == LDOT){
+            /*visit struct member*/
+                varItem *tempExpVar = new varItem(AnalyzeExp(fstChildNode));
+                if(tempExpVar->GetType() != STRUCT){
+                /*error type13, illegal use of '.'*/
+                    SemanticError newErr(fstChildNode->lineno, tempExpVar->GetName(), 13);
+                    ErrorList.AddError(newErr);
+                    delete tempExpVar;
+                    return varItem(string(""), VOID, -1, 0);
+                }
+                else{
+                    SyntaxTreeNode* IDNode = GetChild(ExpNode, 3);
+                    string IDname(IDNode->NodeUnit.LU.IDname);
+                    varItem* structMember(tempExpVar->GetStructType()->GetMember(IDname));
+                    if(structMember == NULL){
+                    /*error type14, using non-exist member*/
+                        SemanticError newErr(IDNode->lineno, IDname, 14);
+                        ErrorList.AddError(newErr);
+                        delete tempExpVar;
+                        return varItem(IDname, VOID, -1, 0);
+                    }
+                    else{
+                        delete tempExpVar;
+                        return *structMember;
+                    }
+                }
+            }
+
+            else if(SecChildNode->NodeUnit.LU.Lextype == LLB){
+            /*array visit*/
+            }
+            else{
+            /*two element operators*/
+            }
+        }
     }
 }
 

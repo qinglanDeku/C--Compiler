@@ -28,10 +28,10 @@ private:
     void AnalyzeExtDef(SyntaxTreeNode* Node);
     void AnalyzeDef(SyntaxTreeNode* Node);
     void AnalyzeStmt(SyntaxTreeNode* StmtNode);
-    varItem AnalyzeExp(SyntaxTreeNode* Node, TYPE &ExpType, int &ExpDimension,\
-    structItem* &ExpStructType);
+    varItem AnalyzeExp(SyntaxTreeNode* ExpNode);
     void AnlzFunc(SyntaxTreeNode* FuncNode, TYPE retType, structItem* structType);
     void AnlzFuncArgList(SyntaxTreeNode* ArgListNode, funItem& func, char AnlyStyle);
+    vector<varItem> AnalyzeArgs(SyntaxTreeNode* ArgsNode);
     bool AnlzSpecf(SyntaxTreeNode* DefSpecf, string &StrType, structItem* &structType);
     void AnalyzeCompSt(SyntaxTreeNode* CompStNode);
     structItem* AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerStruct, int ifDef);
