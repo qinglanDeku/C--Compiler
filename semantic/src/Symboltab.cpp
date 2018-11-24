@@ -1,5 +1,6 @@
 #include"Symboltab.h"
 #include<iostream>
+#include<assert.h>
 using std::cout;
 using std::endl;
 /*class varItem*/
@@ -32,7 +33,7 @@ void varItem::SetStructType(structItem* type){
     this->structType = type;
 }
 
-void varItem::print(){
+void varItem::print() const{
     cout<<"var name:"<<name<<"| "<<"var type:"<<StrTYPE[type]<<"| ";
     if(type == STRUCT || type == STRUCTARRAY){
         cout<<"struct name:"<<structType->GetName()<<"| ";
@@ -41,7 +42,7 @@ void varItem::print(){
 }
 
 
-bool varItem::operator== (varItem &a)const {
+bool varItem::operator== (varItem &a) {
     if(this->type != STRUCT && this->type != STRUCTARRAY && this->type == a.type){
         if(this->dimension == a.dimension)
             return true;
@@ -70,6 +71,7 @@ class funItem*/
 funItem::funItem(const funItem& a){
     this->name = a.name;
     this->retval = a.retval;
+    this->retStruct = a.retStruct;
     this->DefArgList.assign(a.DefArgList.begin(), a.DefArgList.end());
    // this->DecArgList.assign(a.DecArgList.begin(), a.DecArgList.end());
     this->DecLine = a.DecLine;
@@ -77,11 +79,22 @@ funItem::funItem(const funItem& a){
 }
 
 void funItem::print(){
-    cout<<"func name:"<<name<<" |  "<<"retval type:"<<StrTYPE[retval]<<" |  ";
-    if(retval == STRUCT)
+    cout<<"func name:"<<name<<"  |";
+    cout<<"retval type :";
+    if(retval == INT){
+        cout<<"int  |";
+    }
+    else if(retval == FLOAT){
+        cout<<"float  |";
+    }
+    else{
+        cout<<"struct  |";
+    }
+    if(retval == STRUCT){
         cout<<"struct name:"<<retStruct->GetName()<<" |  ";
+    }
     for(int i(0); i < DefArgList.size(); i++){
-        cout<<"arg "<<i + 1<<"type :";
+        cout<<"arg"<<i + 1<<" type :";
         if(DefArgList[i].GetType() == STRUCT || DefArgList[i].GetType() == STRUCTARRAY){
             cout<<"struct "<<DefArgList[i].GetStructType()->GetName();
         }
@@ -96,13 +109,14 @@ void funItem::print(){
     cout<<"DefLine:"<<DefLine<<endl;
 }
 
-bool funItem::operator==(funItem& a)const{
+bool funItem::operator==(funItem& a){
     if(this->retval != a.retval)
         return false;
     else if(this->retval == STRUCT)
-        if(this->retStruct != a.retStruct)
+        if(this->retStruct != a.retStruct){
             if(*(this->retStruct) != *(a.retStruct))
                 return false;
+        }
     
     if(this->DefArgList.size() != a.DefArgList.size())
         return false;
@@ -250,7 +264,7 @@ void FuncSymbolTab::PrintTab(){
     return p;
  }
 
- void structItem::print(){
+ void structItem::print() const{
      cout<<"struct name:"<<name<<" |  " ;
      for(int i(0); i < MemberVar.size();i++){
         cout<<"struct Member"<<i+1<<" :";
@@ -259,8 +273,8 @@ void FuncSymbolTab::PrintTab(){
     cout<<"|  "<<"struct DefLine:"<<FstDefLine<<endl;
  }
 
- bool structItem::operator ==(structItem &a)const{
-     if(this->name != a.name){
+ bool structItem::operator ==(structItem &a){
+     if((this->name != a.name) || (this->name == a.name && this->name == "")){      
         if(this->MemberVar.size() != a.MemberVar.size())
             return false;
         else{
@@ -270,6 +284,7 @@ void FuncSymbolTab::PrintTab(){
             }
         }
      }
+     
      return true;
  }
 

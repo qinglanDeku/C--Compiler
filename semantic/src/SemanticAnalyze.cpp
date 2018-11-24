@@ -371,9 +371,9 @@ bool Analyze::AnlzSpecf(SyntaxTreeNode* DefSpecf, string &StrType, structItem* &
 void Analyze::AnlzFunc(SyntaxTreeNode* FuncNode, TYPE retType, structItem* structType){
     SyntaxTreeNode* FuncNameNode(GetChild(FuncNode, 1));
     string FuncName(FuncNameNode->NodeUnit.LU.IDname);
+    
     if(GetNodeType(GetNextSibling(FuncNode)) == Lexical){
     /*this is a func declaration*/
-
         funItem* NewFunc = new funItem(FuncName, retType, FuncNode->lineno);
         NewFunc->SetRetStruct(structType);
         if(ChildNumber(FuncNode) == 3);//have no arglist do nothing
@@ -387,7 +387,7 @@ void Analyze::AnlzFunc(SyntaxTreeNode* FuncNode, TYPE retType, structItem* struc
         }
         else{
         /*have been defined or declared*/
-            if( *result== *NewFunc)
+            if( *result == *NewFunc)
             /*just declare, do nothing*/;
             else{
             /*error type 19, inconsistent function declaration or definition*/

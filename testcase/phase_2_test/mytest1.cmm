@@ -1,25 +1,30 @@
+
 struct a{
     int b;
-    int a;
     int c;
 };
-struct c;
-struct b{
-    int bb;
-    int cc[10];
-    int aa;
-    struct c a;
-    struct d{
-        int aaa;
-        int bbb;
-        int ccc;
-    } e[10];
-
-} ee;
-struct {
+struct{
         int aaaa;
         int bbbb;
 } func(int a, float b);
+struct c{
+    int asdddd;
+    int bbbs;
+};
+struct{
+    float asdfg;
+    int gfdas;
+} func(int a, float b);
+int a;
+int b;
 
-int func(int a, float b);
+struct{
+    int awer;
+    int vcbg;
+} func(int b, float c);
+
+struct{
+    int ffffff;
+    int eeeeeeee;
+} func(int b, int b);
 

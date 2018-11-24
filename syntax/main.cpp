@@ -30,6 +30,7 @@ int main(int argc, char** argv){
     A->TraverseTree(TreeRoot);
     A->PrintVarSymbolTab();
     A->PrintStructType();
+    A->PrintFuncSymbolTab();
     A->PrintSemanticError();
    // printf("????");
    // PrintTree();

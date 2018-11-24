@@ -29,9 +29,9 @@ public:
     const int GetDimension(){return dimension;}
     structItem* GetStructType(){return structType;}
     void SetStructType(structItem *type);//if Item type is struct
-    void print();
-    bool operator == (varItem &a) const;        //judge if they are the same type
-    bool operator != (varItem &a) const{return !(*this == a);}
+    void print() const;
+    bool operator == (varItem &a) ;        //judge if they are the same type
+    bool operator != (varItem &a) {return !(*this == a);}
     
 private:
     string name;
@@ -68,7 +68,7 @@ public:
         this->DefArgList.assign(a.DefArgList.begin(), a.DefArgList.end());
     }
     bool NotDef(){return DefLine == -1?true:false;}
-    bool operator ==(funItem& a)const;//retval and Arglist are the same
+    bool operator ==(funItem& a);//retval and Arglist are the same
 
 private:
     string name;
@@ -136,9 +136,9 @@ public:
     int MemberNum() const {return MemberVar.size();}
     const varItem* GetMember(int No){return &MemberVar[No - 1];}
     const varItem* GetMember(const string& name);
-    void print();
-    bool operator == (structItem &a)const;
-    bool operator !=(structItem &a)const{
+    void print() const;
+    bool operator == (structItem &a);
+    bool operator !=(structItem &a){
         return !(*this == a);
     }
 
