@@ -927,8 +927,7 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
                 }
 
                 else if(opNode->NodeUnit.LU.Lextype == LAND || \
-                opNode->NodeUnit.LU.Lextype == LOR || \
-                opNode->NodeUnit.LU.Lextype == LRELOP){
+                opNode->NodeUnit.LU.Lextype == LOR ){
                 /*logical arithmetic*/
                     if(Exp1.GetType() != INT || Exp2.GetType() != INT){
                     /*error type7*/
@@ -939,6 +938,20 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
                     }
                     else{
                         return varItem("$constInt", INT, SubExpNode1->lineno, 0);
+                    }
+                }
+                else if(opNode->NodeUnit.LU.Lextype == LRELOP){
+                    if(Exp1.GetType() == INT && Exp2.GetType() == INT){
+                        return varItem("$constInt", INT, SubExpNode1->lineno, 0);
+                    }
+                    else if(Exp1.GetType() == FLOAT && Exp2.GetType() == FLOAT){
+                        return varItem("$constInt", INT, SubExpNode1->lineno, 0);
+                    }
+                    else {
+                        SemanticError *newErr = new SemanticError(SubExpNode1->lineno, Exp1.GetName(), 7);
+                        ErrorList.AddError(*newErr);
+                        delete newErr;
+                        return varItem("$error7", VOID, -1, 0);
                     }
                 }
 

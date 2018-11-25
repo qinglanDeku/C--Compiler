@@ -1,0 +1,19 @@
+struct node{
+    float val[1][1];
+    struct{
+        int t[1][2][3];
+    } s[2][3];
+};
+
+int add(float a[1]){
+    float sum = a[1] + a[3];
+    return sum > 0.7;
+}
+
+int main(){
+    struct node n;
+    int three[1][1][1];
+    float j[1][1];
+    n.s[0][0].t = three;
+    return add(j[0]);
+}
