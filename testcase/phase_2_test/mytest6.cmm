@@ -1,0 +1,11 @@
+int main(){
+    int a;
+    int b;
+    int c,e;
+    int d;
+    if(1)
+        if(1)
+            if(1)
+                a = a + b + c - d * e;
+    return a;
+}
