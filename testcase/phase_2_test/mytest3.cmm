@@ -4,7 +4,16 @@ int Fib(int a){
     else 
         return Fib(a-1) + Fib(a-2);
 }
-
+int testFunc(int c);
+float func1();
 int main(){
-    return Fib(100);
+    testFunc(2);
+    func2(3);
+    return testFunc(Fib(100));
+}
+
+int Fib(int b);
+int testFunc(int c){
+    return Fib(c);
+    //return 1.0;
 }

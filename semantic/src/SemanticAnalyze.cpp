@@ -39,12 +39,19 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
             /*this is just a declaration, and need to check the structTab, 
             ensure the struct has been definition.If not, need to define after*/
                 string StructName(GetChild(structSpecf,2)->child->NodeUnit.LU.IDname);
-                if(StructTab.FindItem(StructName) == NULL){
+                if(StructTab.FindItem(StructName) == NULL && VariableTab.FindItem(StructName) == NULL){
                 /*struct type dec but not def*/
                     structItem newItem(StructName, structSpecf->lineno, -1);
                     StructTab.AddItem(newItem);
                 }
-                else ;
+                else{
+                    if(VariableTab.FindItem(StructName) != NULL){
+                    /*error type16*/
+                        SemanticError *newErr = new SemanticError(structSpecf->lineno, StructName, 16);
+                        ErrorList.AddError(*newErr);
+                        delete newErr;
+                    }
+                }
             
             }   
 
@@ -63,7 +70,12 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
                 
                 if(structName == "" || StructTab.FindItem(structName) == NULL ){
                 /*not exist in the StructTab, first define*/
-                    
+                    if(VariableTab.FindItem(structName) != NULL){
+                    /*error type16, struct name same as a variable*/
+                        SemanticError *newErr = new SemanticError(structSpecf->lineno, structName, 16);
+                        ErrorList.AddError(*newErr);
+                        delete newErr;
+                    }
                     structItem newStructItem(structName, structSpecf->lineno, structSpecf->lineno);
                     AnlzStruct(structSpecf, &newStructItem, UnDefinedStructType);
                 }
@@ -144,7 +156,7 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
                     }
                     
                     /*before add, check it*/
-                    if(VariableTab.FindItem(StrVarName) != NULL){
+                    if(VariableTab.FindItem(StrVarName) != NULL || StructTab.FindItem(StrVarName) != NULL){
                     /*error type 3*/
                         SemanticError newError(VarDec->lineno, StrVarName, 3);
                         ErrorList.AddError(newError);
@@ -347,6 +359,12 @@ bool Analyze::AnlzSpecf(SyntaxTreeNode* DefSpecf, string &StrType, structItem* &
                 SubStructName = string(GetChild(GetChild(SubStructSpecf,2),1)->NodeUnit.LU.IDname);
             if(StructTab.FindItem(SubStructName) == NULL || SubStructName == "")
             {/*first define this struct type*/
+                if(VariableTab.FindItem(SubStructName) != NULL){
+                /*error type16*/
+                    SemanticError *newErr = new SemanticError(SubStructSpecf->lineno, SubStructName, 16);
+                    ErrorList.AddError(*newErr);
+                    delete newErr;
+                }
                 structItem newStruct(SubStructName, SubStructSpecf->lineno, SubStructSpecf->lineno);
                 StructType = AnlzStruct(SubStructSpecf, &newStruct, UnDefinedStructType); 
             }
@@ -499,6 +517,11 @@ structItem* structType, int VariableType){
         SemanticError newError(varDecNode->lineno, strVarName, 3);
         ErrorList.AddError(newError);
         //return NULL;
+    }
+    if(StructTab.FindItem(strVarName) != NULL && VariableType == GLOBAL){
+    /*error type3*/
+        SemanticError newError(varDecNode->lineno, strVarName, 3);
+        ErrorList.AddError(newError);   
     }
 
     if(strType == "int"){
