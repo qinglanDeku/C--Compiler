@@ -1,0 +1,17 @@
+struct Position
+{
+    float x;
+};
+
+struct Position{
+    int y;
+};
+
+struct Position;
+
+int main()
+{
+    struct Position temp;
+    temp.x = 1.6;
+    return temp.x;
+}

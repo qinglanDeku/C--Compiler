@@ -1,0 +1,11 @@
+int func(int i)
+{
+    return i;
+}
+
+int main()
+{   
+    if(1)
+        return func(1, 2);
+    return func(6);
+}

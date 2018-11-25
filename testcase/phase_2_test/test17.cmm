@@ -1,0 +1,6 @@
+int main()
+{
+    struct Position pos;
+    set(pos);
+    return pos.d;
+}

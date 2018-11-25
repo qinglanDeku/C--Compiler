@@ -954,8 +954,8 @@ void Analyze::CheckFunTab(){
     list<funItem>::iterator it = FunctionTab.table.begin();
     while(it != FunctionTab.table.end()){
         if(it->NotDef()){
-        /*error type 2*/
-            SemanticError *newErr  = new SemanticError(it->GetDecLine(), it->GetName(), 2);
+        /*error type 18*/
+            SemanticError *newErr  = new SemanticError(it->GetDecLine(), it->GetName(), 18);
             ErrorList.AddError(*newErr);
             delete newErr;
         }

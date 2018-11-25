@@ -1,0 +1,8 @@
+int main()
+{
+    int i;
+    int j[4][5];
+    i[0];
+    j[6];
+    return j[0][0];
+}

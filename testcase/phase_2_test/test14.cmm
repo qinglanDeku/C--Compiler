@@ -1,0 +1,13 @@
+struct Position
+{
+    float x, y;
+    int z;
+};
+
+int main()
+{
+    struct Position p;
+    if (p.n == 3.7)
+        return p.z;
+    return p.y;
+ }

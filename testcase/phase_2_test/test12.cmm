@@ -1,0 +1,9 @@
+int main()
+{
+    int i[10];
+    float j[10];
+    i[1.5] = 10;
+    if(i)
+        return i[0];
+    return j[2];
+}

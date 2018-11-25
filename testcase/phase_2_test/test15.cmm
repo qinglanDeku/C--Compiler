@@ -1,0 +1,20 @@
+struct Position
+{
+    float x, y = 0.0;
+    int x ;
+};
+
+int main()
+{
+    struct Position d;
+    return d.x;
+}
+
+struct{
+    int z;
+    float z,i;
+    struct{
+        int b;
+        struct Position c;
+    } y;
+};

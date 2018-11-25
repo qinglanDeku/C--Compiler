@@ -1,0 +1,12 @@
+int func(int a);
+
+int func(int a)
+{
+    return 1;
+}
+
+int main()
+{
+    func(2);
+    return func(40);
+}
