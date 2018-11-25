@@ -17,3 +17,9 @@ int testFunc(int c){
     return Fib(c);
     //return 1.0;
 }
+int func1();
+
+struct a{
+    int b;
+    int c;
+};

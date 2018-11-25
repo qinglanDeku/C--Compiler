@@ -1,0 +1,55 @@
+struct Point{
+    int x;
+    int y;
+}start, end;
+
+int drawPoint(int x, int y);
+
+
+int drawLine(){
+ if((start.x <= end.x && start.y<=end.y)
+            || (start.x >= end.x &&start.y>= end.y)){
+        int BeginPointX = start.x;
+        int EndPointX = end.x;
+        int BeginPointY = start.y;
+        int EndPointY = end.y;
+        int tempx = BeginPointX;
+        int tempy = BeginPointY;
+        int dx = EndPointX - tempx;
+        int dy = EndPointY - tempy;
+        int p = 0;
+        /*slope less than 1 but more than 0*/
+        if(dy <= dx){
+            p = 2*dy - dx;
+            while(tempx<=EndPointX ){
+                drawPoint(tempx, tempy);
+                if(p >= 0){
+                    tempy =tempy + 1;
+                    p =p +2*(dy - dx);
+                }
+                else{
+                    p =p+ 2*dy;
+                }
+                tempx = tempx +1;
+            }
+        }
+        /*slope more than 1*/
+        else{
+            p = 2*dx - dy;
+            while(tempy <= EndPointY){
+                drawPoint(tempx,tempy);
+                if(p>=0){
+                    tempx = tempx + 1;
+                    p=p + 2*(dx-dy);
+                }
+                else{
+                    p=p + 2*dx;
+                }
+                tempy = tempy + 1;
+            }
+        }
+
+    }
+
+
+}

@@ -12,6 +12,6 @@ struct Position;
 int main()
 {
     struct Position temp;
-    temp.x = 1.6;
+    temp.x = 1.6 + 2.6;
     return temp.x;
 }

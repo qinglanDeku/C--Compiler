@@ -1,0 +1,15 @@
+struct a{
+    int b;
+    int c;
+};
+int main(){
+    struct a temp1[10][20];
+    struct a temp2;
+    struct a structtemp;
+    temp1[0].b;
+    temp1.c;
+    temp1.d;
+    temp1[0][0].c;
+    temp2 = temp1[10][0];
+    temp2.d = 0;
+}

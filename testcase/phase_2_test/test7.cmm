@@ -1,10 +1,10 @@
 int main()
 {
     float j;
-    10 + j;
+    10 + j; //error type 7
     if (2)
         return 2;
-    if(10 + j){
+    if(10 + j){     //error type 7
         return 10 + j;
     }
     else{
@@ -13,4 +13,4 @@ int main()
         else 
             return 2;
     }
-}
+}   

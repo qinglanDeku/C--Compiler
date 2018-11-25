@@ -9,5 +9,5 @@ int main()
     int i;
     int i, j;
     i = func();
-    return func;
+    return func() + 1;
 }    

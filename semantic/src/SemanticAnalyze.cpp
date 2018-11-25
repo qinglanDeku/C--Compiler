@@ -76,8 +76,12 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
                         ErrorList.AddError(*newErr);
                         delete newErr;
                     }
-                    structItem newStructItem(structName, structSpecf->lineno, structSpecf->lineno);
-                    AnlzStruct(structSpecf, &newStructItem, UnDefinedStructType);
+                    structItem *newStructItem = new structItem(structName, structSpecf->lineno, structSpecf->lineno);
+                    StructTab.AddItem(*newStructItem);
+                    delete newStructItem;
+                    newStructItem = StructTab.FindItem(structName);
+                    AnlzStruct(structSpecf, newStructItem, DefinedStructType);
+                    
                 }
 
                 else if(StructTab.FindItem(structName) != NULL && StructTab.FindItem(structName)->GetFstDefLine() == -1){
@@ -294,6 +298,11 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
             /*error type 3*/
                 SemanticError newError(Dec->lineno, MemName, 3);
                 ErrorList.AddError(newError);
+            }
+            else if(StructTab.FindItem(MemName) != NULL){
+            /*error type 3*/
+                SemanticError newError(Dec->lineno, MemName, 3);
+                ErrorList.AddError(newError);    
             }
             //else{
             /*no redefine*/
