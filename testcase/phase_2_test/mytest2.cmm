@@ -1,0 +1,17 @@
+struct a{
+    int a;
+    float b;
+};
+int main(){
+    struct a temp1;
+    struct a array1[1][2];
+    struct a array2[3];
+    temp1.a  = 0;
+    (temp1.a + array1[0][1].a) = 0;
+    array1[0][0].b = 2.0;
+    array1[0] = array2;
+    array2[2].b = 3.4;
+    (temp1.a) = 5;
+    return array1[1][0].a;
+
+}

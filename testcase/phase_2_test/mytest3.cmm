@@ -1,0 +1,10 @@
+int Fib(int a){
+    if(a == 0 || a == 1)
+        return 1;
+    else 
+        return Fib(a-1) + Fib(a-2);
+}
+
+int main(){
+    return Fib(100);
+}
