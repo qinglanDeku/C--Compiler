@@ -1006,6 +1006,21 @@ void Analyze::CheckFunTab(){
         }
         it++;
     }
+    string *str_read = new string("read");
+    string *str_write = new string("write");
+    varItem* write_arg = new varItem("output", INT, 0, 0);
+    funItem* read = new funItem(*str_read, INT, 0, 0);
+    funItem* write = new funItem(*str_write, INT, 0, 0);
+    write->pushDefArg(*write_arg);
+    FunctionTab.AddItem(*read);
+    FunctionTab.AddItem(*write);
+    delete write;
+    delete read;
+    delete write_arg;
+    delete str_read;
+    delete str_write;
+
+
 }
 
 

@@ -19,6 +19,11 @@ public:
         StructTab.PrintList();
     }
     void CheckFunTab();
+
+    VarSymbolTab VariableTab;
+    FuncSymbolTab FunctionTab;
+    structTab StructTab;
+    SemanticErrorList ErrorList;
 private:
 #define DefinedStructType 1
 #define UnDefinedStructType 0
@@ -47,8 +52,8 @@ private:
 
     varItem* AnalyzeVarDec(SyntaxTreeNode *varDecNode, string &StrType, \
     structItem* structType, int VariableType);
-    VarSymbolTab VariableTab;
-    FuncSymbolTab FunctionTab;
-    structTab StructTab;
-    SemanticErrorList ErrorList;
+
+
+
+
 };

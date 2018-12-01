@@ -28,13 +28,8 @@ int main(int argc, char** argv){
     TraverseTree();
     Analyze * A= new Analyze;
     A->TraverseTree(TreeRoot);
-    /*A->PrintVarSymbolTab();
-    A->PrintStructType();
-    A->PrintFuncSymbolTab();*/
     A->CheckFunTab();
     A->PrintSemanticError();
-   // printf("????");
-   // PrintTree();
     }
         
     }
