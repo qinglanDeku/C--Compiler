@@ -111,7 +111,7 @@ private:
 class CondCode:public InterCode{
 public:
     enum Relop{
-        LE, LEQ, GE, GEQ, EQ, AND, OR, NE
+        L, LE, G, GE, EQ, NE
     };
     CondCode(IRtype type, Operand *op1, Operand *op2, Relop relop, int dstLabel);
     Operand getOp1(){return op1;}
@@ -122,6 +122,7 @@ private:
     Operand op1, op2;
     Relop relop;
     int dstLabel;
+    string produceCode();
 };
 
 class RetCode:public InterCode{
@@ -200,9 +201,3 @@ private:
 };
 
 
-class IRlist{
-public:
-    void printCodeList();
-private:
-    list<InterCode*> IRCodeList;
-};

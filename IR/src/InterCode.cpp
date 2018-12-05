@@ -143,9 +143,67 @@ string LabelCode::produceCode(){
     temp.append("LABEL ");
     temp.append(strNo);
     temp.append(" :");
+    delete ss;
     return temp;
 }
 
 
 
-/***************************************************************/
+/*****************************class GotoCode**********************************/
+GotoCode::GotoCode(IRtype type, int dstLabel):\
+InterCode(type), dstLabel(dstLabel){
+    this->code = produceCode();
+}
+
+string GotoCode::produceCode(){
+    string temp;
+    stringstream *ss = new stringstream;
+    string strLabel;
+    temp.append("GOTO ");
+    *ss << this->dstLabel;
+    *ss>>strLabel;
+    temp.append(strLabel);
+    delete ss;
+    return temp;
+}
+
+/***************************class CondCode****************************/
+CondCode::CondCode(IRtype type, Operand *op1, Operand *op2, Relop relop, int dstLabel):\
+InterCode(type), op1(*op1), op2(*op2), relop(relop), dstLabel(dstLabel)
+{
+    this->code = produceCode();
+}
+
+string CondCode::produceCode(){
+    string temp;
+    string *strLabel = new string; 
+    stringstream *ss = new stringstream;
+
+    temp.append("IF ");
+    temp.append(op1.getName);
+    temp.append(" ");
+    if(relop == GE)
+        temp.append(" >= ");
+    else if(relop == G)
+        temp.append(" > ");
+    else if(relop == LE)
+        temp.append(" <= ");
+    else if(relop == L)
+        temp.append(" < ");
+    else if(relop == EQ)
+        temp.append(" = ");
+    else
+        temp.append(" != ");
+    temp.append(op2.getName());
+    temp.append(" GOTO ");
+    *ss<<this->dstLabel;
+    *ss >>*strLabel;
+    temp.append(*strLabel);
+
+    delete strLabel;
+    delete ss;
+
+    return temp;
+}
+
+
