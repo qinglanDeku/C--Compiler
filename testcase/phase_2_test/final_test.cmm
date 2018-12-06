@@ -11,9 +11,10 @@ int add(float a[1]){
 }
 
 int main(){
-    struct node n;
+    struct node n, m;
     int three[1][1][1];
     float j[1][1];
     n.s[0][0].t = three;
+    n.val = m.val[0];
     return add(j[0]);
 }

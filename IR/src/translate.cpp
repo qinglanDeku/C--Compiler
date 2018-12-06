@@ -105,5 +105,6 @@ void Translate::translateExp(SyntaxTreeNode* expNode, Analyze* analyzeResult, Op
                 variable1 = new Operand(Operand::VARIABLE, var1No);
             }
             /**/
+        }
     }
 }
