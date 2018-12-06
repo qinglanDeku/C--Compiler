@@ -149,7 +149,7 @@ void VarSymbolTab::DeleteItem(char* Itemname){
     table.erase(it);
 }
 
-const varItem* VarSymbolTab::FindItem(const char*name){
+varItem* VarSymbolTab::FindItem(const char*name){
     string tempname;
     tempname.assign(name);
     list<varItem>::iterator it = table.begin();
@@ -164,7 +164,7 @@ const varItem* VarSymbolTab::FindItem(const char*name){
         return &(*it);
 }
 
-const varItem* VarSymbolTab::FindItem(const string &name){
+varItem* VarSymbolTab::FindItem(const string &name){
     list<varItem>::iterator it = table.begin();
     while(it != table.end()){
         if(it->GetName() == name)
@@ -177,6 +177,19 @@ const varItem* VarSymbolTab::FindItem(const string &name){
         return &(*it);
 }
 
+int VarSymbolTab::getItemNum (string name){
+    list<varItem>::iterator it(table.begin());
+    int num(1);
+    while (it != table.end()){
+        if(it->GetName() == name){
+            return num;
+        }
+        num += 1;
+        it++;
+    }
+    return -1;//not find
+}
+
 void VarSymbolTab::PrintTab(){
     list<varItem>::iterator it(table.begin());
     while(it != table.end()){
@@ -186,6 +199,8 @@ void VarSymbolTab::PrintTab(){
     }
     cout<<"==================================="<<endl;
 }
+
+
 
 
 /* *************************************************
@@ -230,6 +245,19 @@ funItem* FuncSymbolTab::FindItem(const string& name){
         return NULL;
     else
         return &(*it);
+}
+
+int FuncSymbolTab::getItemNum(string name){
+    list<funItem>::iterator it(table.begin());
+    int num(1);
+    while(it != table.end()){
+        if(it->GetName() == name){
+            return num;
+        }
+        num += 1;
+        it++;
+    }
+    return -1;
 }
 
 void FuncSymbolTab::PrintTab(){

@@ -97,8 +97,9 @@ public:
     ~VarSymbolTab(){}
     void AddItem(varItem &item){table.push_back(item);}
     void DeleteItem(char* ItemName);
-    const varItem* FindItem(const char*name);       //if can't find, return nullptr
-    const varItem* FindItem(const string& name);   
+    varItem* FindItem(const char*name);       //if can't find, return nullptr
+    varItem* FindItem(const string& name);
+    int getItemNum(string name);
     void PrintTab();
 private:
     list<varItem> table;
@@ -117,8 +118,10 @@ friend class Analyze;
     void DeleteItem(char* ItemName);
     funItem* FindItem(const char*name);
     funItem* FindItem(const string& name);
+    int getItemNum(string name);
     void PrintTab();
-private:
+
+  private:
     list<funItem> table;
 };
 

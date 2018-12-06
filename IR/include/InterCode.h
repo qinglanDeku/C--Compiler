@@ -8,8 +8,7 @@ class Operand{
 public:
 
     enum OPType {VARIABLE, TEMPVARIABLE, ICONSTANT, FCONSTANT, ADRESS, TEMPADRESS} ;      
-    Operand(OPType type, int No):type(type){
-        this->No = No;
+    Operand(OPType type, int No):type(type),No(No){
         name = produceName();}
     Operand(){}
     ~Operand(){}
@@ -20,7 +19,6 @@ public:
     
 
 private:
-    static int tempVarNum;
     OPType type;
     union{
         int IVal;       //int val of a variable/constant

@@ -5,9 +5,11 @@ TARGET = parser
 $(TARGET) :
 	cd syntax && make;
 	cd semantic && make;
+	cd IR && make;
 	g++ -o $(TARGET) $(OBJ1) $(OBJ2) -lfl
         
 clean :
 	cd syntax && make clean;
 	cd semantic && make clean;
+	cd IR && make clean;
 	rm $(TARGET)

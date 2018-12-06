@@ -6,7 +6,6 @@ using std::cin;
 using std::endl;
 using std::stringstream;
 /**********************class Operand****************************/
-int Operand::tempVarNum = 0;
 
 string Operand::produceName(){
     string temp;
@@ -22,10 +21,9 @@ string Operand::produceName(){
     }
     else if(type == TEMPVARIABLE || type == TEMPADRESS){
         temp.append("t");
-        this->tempVarNum+= 1;
-        stringstream *ss;
+        stringstream *ss = new stringstream;
         string *strNo = new string;
-        *ss <<this->tempVarNum;
+        *ss <<this->No;
         *ss >>*strNo;
         temp.append(*strNo);
         delete ss;
@@ -180,7 +178,7 @@ string CondCode::produceCode(){
     stringstream *ss = new stringstream;
 
     temp.append("IF ");
-    temp.append(op1.getName);
+    temp.append(op1.getName());
     temp.append(" ");
     if(relop == GE)
         temp.append(" >= ");

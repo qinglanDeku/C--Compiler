@@ -76,7 +76,7 @@ SyntaxTreeNode* GetChild(SyntaxTreeNode* parent, int No);
 
 SyntaxTreeNode* GetNextSibling(SyntaxTreeNode* sibling);
 
-char GetNodeType(SyntaxTreeNode* node);
+char GetNodeType(const SyntaxTreeNode* node);
 
 void AddSibling(SyntaxTreeNode* Node1, SyntaxTreeNode* Node2);
 // Set Node2 as Node1's NextSibling

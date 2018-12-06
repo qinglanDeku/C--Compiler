@@ -104,7 +104,7 @@ SyntaxTreeNode* GetNextSibling(SyntaxTreeNode* sibling){
     return sibling->NextSibling;
 }
 
-char GetNodeType(SyntaxTreeNode* node){
+char GetNodeType(const SyntaxTreeNode* node){
     return node->type;
 }
 

@@ -2,14 +2,20 @@
 #include"../../semantic/include/SemanticAnalyze.h"
 class Translate{
 public:
+    Translate():tempVarNum(0), labelNum(0){}
     void printCodeList();
     
-    void translateTree(const SyntaxTreeNode* root, const Analyze* analyzeResult);
-    void translateExp(const SyntaxTreeNode* expNode, const VarSymbolTab* varTable, string place);
-    void translateCond(const SyntaxTreeNode* condNode, int trueLable, int falseLable, const VarSymbolTab* varTable);
-    void translateStmt(const SyntaxTreeNode* stmtNode, const VarSymbolTab* varTable);
-    void translateArg(const SyntaxTreeNode* argsNode, const VarSymbolTab* varTable, vector<string> *arg_list);
-    
-private:
+    void translateTree(SyntaxTreeNode* root, Analyze* analyzeResult);
+    void translateExp( SyntaxTreeNode* expNode, Analyze* analyzeResult, Operand *place);
+    void translateCond( SyntaxTreeNode* condNode, int trueLable, int falseLable, Analyze* analyzeResult);
+    void translateStmt( SyntaxTreeNode* stmtNode, Analyze* analyzeResult);
+    void translateArg( SyntaxTreeNode* argsNode, Analyze* analyzeResult, vector<string> *arg_list);
+    void translateCompSt(SyntaxTreeNode *compstNode, Analyze *analyzeResult);
+
+  private:
     list<InterCode*> IRCodeList;
+    int tempVarNum;
+    int labelNum;
+    int newTemp(); //remember to delete the dynamic return val before not using it
+    int newLabel();
 };
