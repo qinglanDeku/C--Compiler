@@ -5,80 +5,85 @@ using std::cout;
 using std::cin;
 using std::endl;
 using std::stringstream;
-/**********************class Operand****************************/
 
-string Operand::produceName(){
+/***********************class VariableOP*****************************/
+string VariableOP::produceName(){
     string temp;
-    if(type == VARIABLE || type == ADRESS){
-        temp.append("v");
-        stringstream *ss = new stringstream;
-        string *strNo = new string;
-        *ss<<this->No;
-        *ss>>*strNo;
-        temp.append(*strNo);
-        delete ss;
-        delete strNo;
-    }
-    else if(type == TEMPVARIABLE || type == TEMPADRESS){
-        temp.append("t");
-        stringstream *ss = new stringstream;
-        string *strNo = new string;
-        *ss <<this->No;
-        *ss >>*strNo;
-        temp.append(*strNo);
-        delete ss;
-        delete strNo;
-    }
-    else{
-        temp.append("#");
-        string *strVal = new string;
-        stringstream* ss = new stringstream;
-        if(type == ICONSTANT){
-            *ss << value.IVal;
-            *ss >> *strVal;
-        }
-        else{
-            *ss <<value.FVal;
-            *ss >>*strVal;
-        }
-        temp.append(*strVal);
-        delete strVal;
-        delete ss;
-    }
+    
+    temp.append("v");
+    stringstream *ss = new stringstream;
+    string *strNo = new string;
+    *ss<<this->No;
+    *ss>>*strNo;
+    temp.append(*strNo);
+    delete ss;
+    delete strNo;
+
     return temp;
 }
 
 
+string TemporaryOP::produceName(){
+    string temp;
+    temp.append("t");
+    stringstream *ss = new stringstream;
+    string *strNo = new string;
+    *ss <<this->No;
+    *ss >>*strNo;
+    temp.append(*strNo);
+    delete ss;
+    delete strNo;
+    return temp;
+}
+
+string ConstantOP::produceName(){
+    string temp;
+    temp.append("#");
+    string *strVal = new string;
+    stringstream* ss = new stringstream;
+    if(type == ICONSTANT){
+        *ss << value.IVal;
+        *ss >> *strVal;
+    }
+    else{
+        *ss <<value.FVal;
+        *ss >>*strVal;
+    }
+    temp.append(*strVal);
+    delete strVal;
+    delete ss;
+    return temp;
+}
 
 /***********************class AssignCode*******************************/
 
 AssignCode::AssignCode(IRtype type, Operand* left, Operand *right):InterCode(type),\
-left(*left), right(*right){
+left(left), right(right){
     this->code = produceCode();
 }
 
 string AssignCode::produceCode(){
     string tempCode;
     if(this->type == ASSIGN){
-        tempCode.append(left.getName());
+        tempCode.append(left->getName());
         tempCode.append(" := ");
-        tempCode.append(right.getName());
+        tempCode.append(right->getName());
     }
     else if(this->type == ASSIGNLOC){
-        tempCode.append(left.getName());
+        tempCode.append(left->getName());
         tempCode.append(" := &");
-        tempCode.append(right.getName());
+        tempCode.append(right->getName());
     }
     else if(this->type == ASSIGNFROMLOC){
-        tempCode.append(left.getName());
+        tempCode.append(left->getName());
         tempCode.append(" := *");
-        tempCode.append(right.getName());
+        tempCode.append(right->getName());
     }
     else{
         tempCode.append("*");
-        tempCode.append(left.getName());
+        tempCode.append(left->getName());
         tempCode.append(" := ");
-        tempCode.append(right.getName());
+        tempCode.append(right->getName());
     }
     return tempCode;
 }
@@ -87,15 +92,15 @@ string AssignCode::produceCode(){
 
 /**********************class BinopCode**************/
 BinopCode::BinopCode(IRtype type, Operand* result, Operand *op1, Operand *op2):\
-InterCode(type), result(*result), op1(*op1), op2(*op2){
+InterCode(type), result(result), op1(op1), op2(op2){
     this->code = produceCode();    
 }
 
 string BinopCode::produceCode(){
     string temp;
-    temp.append(this->result.getName());
+    temp.append(this->result->getName());
     temp.append(" := ");
-    temp.append(this->op1.getName());
+    temp.append(this->op1->getName());
     if(this->type == PLUS)
         temp.append(" + ");
     else if(this->type == SUB)
@@ -104,7 +109,7 @@ string BinopCode::produceCode(){
         temp.append(" * ");
     else
         temp.append(" / ");
-    temp.append(this->op2.getName());
+    temp.append(this->op2->getName());
     return temp;
 }
 
@@ -167,7 +172,7 @@ string GotoCode::produceCode(){
 
 /***************************class CondCode****************************/
 CondCode::CondCode(IRtype type, Operand *op1, Operand *op2, Relop relop, int dstLabel):\
-InterCode(type), op1(*op1), op2(*op2), relop(relop), dstLabel(dstLabel)
+InterCode(type), op1(op1), op2(op2), relop(relop), dstLabel(dstLabel)
 {
     this->code = produceCode();
 }
@@ -178,7 +183,7 @@ string CondCode::produceCode(){
     stringstream *ss = new stringstream;
 
     temp.append("IF ");
-    temp.append(op1.getName());
+    temp.append(op1->getName());
     temp.append(" ");
     if(relop == GE)
         temp.append(" >= ");
@@ -192,7 +197,7 @@ string CondCode::produceCode(){
         temp.append(" = ");
     else
         temp.append(" != ");
-    temp.append(op2.getName());
+    temp.append(op2->getName());
     temp.append(" GOTO ");
     *ss<<this->dstLabel;
     *ss >>*strLabel;

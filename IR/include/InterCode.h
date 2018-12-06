@@ -3,34 +3,74 @@
 #include<list>
 using std::string;
 using std::list;
+class varItem;
 
 class Operand{
 public:
-
-    enum OPType {VARIABLE, TEMPVARIABLE, ICONSTANT, FCONSTANT, ADRESS, TEMPADRESS} ;      
-    Operand(OPType type, int No):type(type),No(No){
-        name = produceName();}
+    //using TEMP_ARRAY_XXXXXX while IR involved array or struct
+    enum OPType {VARIABLE, ARRAY_ADRESS, ARRAY_FIRST_ELEMENT,\
+    TEMP_VARIABLE, TEMP_ARRAY_ADRESS, TEMP_ARRAY_FIRST_ELEMENT,\
+    ICONSTANT, FCONSTANT, } ;      
+    Operand(OPType type, int No):type(type),No(No){}
+        //name = produceName();}
     Operand(){}
     ~Operand(){}
     const OPType getType(){return type;}
     const string getName(){return name;}
     void setValue(int Ival){value.IVal = Ival;}
     void setValue(float Fval){value.FVal = Fval;}
-    
+    void setType(OPType newtype){if(type == TEMP_VARIABLE)
+            type = newtype;
+    }
 
-private:
+  protected:
     OPType type;
     union{
         int IVal;       //int val of a variable/constant
         float FVal;     //float val of a variable/constant
-        int adress;     //adress number of an adress
+        //int adress;     //adress number of an adress
         
     }value;
-    int No;         //number of varibale
+    int No;         //the number of varibale
 
     string name;
-    string produceName();
+    virtual string produceName() = 0;
 
+};
+
+class VariableOP:public Operand{
+public:
+    VariableOP(OPType type, int No, varItem* symbolTabP):Operand(type, No),\
+    counterPart(symbolTabP)
+    {
+        name = produceName();
+    }
+
+    const varItem *getSymbolTabItem() { return counterPart; }
+
+  private:
+    const varItem *counterPart;
+    string produceName();
+};
+
+class TemporaryOP:public Operand{
+public:
+    TemporaryOP(OPType type, int No):Operand(type, No){
+        name = produceName();
+    }
+
+private:
+  string produceName();
+};
+
+class ConstantOP:public Operand{
+public:
+    ConstantOP(OPType type):Operand(type, -1){
+        name = produceName();
+    }
+
+private:
+  string produceName();
 };
 
 class InterCode{
@@ -57,22 +97,22 @@ protected:
 class AssignCode:public InterCode{
 public:
     AssignCode(IRtype type, Operand *left, Operand *right);
-    const Operand getLeftOp(){return left;}
-    const Operand getRightOp(){return right;}
+    const Operand* getLeftOp(){return left;}
+    const Operand* getRightOp(){return right;}
 private:
-    Operand left, right; 
+    Operand *left, *right; 
     string produceCode();
 };
 
 class BinopCode:public InterCode{
 public:
     BinopCode(IRtype type, Operand *result, Operand *op1, Operand *op2);
-    const Operand getResult(){return result;}
-    const Operand getOp1(){return op1;}
-    const Operand getOp2(){return op2;}
+    const Operand* getResult(){return result;}
+    const Operand* getOp1(){return op1;}
+    const Operand* getOp2(){return op2;}
 
 private:
-    Operand result, op1, op2;
+    Operand *result, *op1, *op2;
     string produceCode();
 };
 
@@ -112,12 +152,12 @@ public:
         L, LE, G, GE, EQ, NE
     };
     CondCode(IRtype type, Operand *op1, Operand *op2, Relop relop, int dstLabel);
-    Operand getOp1(){return op1;}
-    Operand getOp2(){return op2;}
+    Operand *getOp1(){return op1;}
+    Operand *getOp2(){return op2;}
     Relop getRelop(){return relop;}
     int getDst(){return dstLabel;}
 private:
-    Operand op1, op2;
+    Operand *op1, *op2;
     Relop relop;
     int dstLabel;
     string produceCode();
@@ -126,19 +166,19 @@ private:
 class RetCode:public InterCode{
 public:
     RetCode(IRtype type, Operand* retVal);
-    const Operand getRetVal(){return retVal;}
+    const Operand *getRetVal(){return retVal;}
 private:
-    Operand retVal;
+    Operand *retVal;
     string produceCode();
 };
 
 class DecCode:public InterCode{
 public:
     DecCode(IRtype type, Operand* OP, int size);
-    const Operand getOp(){return OP;}
+    const Operand *getOp(){return OP;}
     const int getSize(){return size;}
 private:
-    Operand OP;
+    Operand *OP;
     int size;
     string produceCode();
 };
@@ -146,9 +186,9 @@ private:
 class ArgCode:public InterCode{
 public:
     ArgCode(IRtype type, Operand* arg);
-    const Operand getArg(){return arg;}
+    const Operand *getArg(){return arg;}
 private:
-    Operand arg;
+    Operand *arg;
     string produceCode();
 };
 
@@ -156,11 +196,11 @@ private:
 class CallCode:public InterCode{
 public:
     CallCode(IRtype type, Operand *retVal, string funcName);
-    const Operand getRetVal(){return retVal;}
+    const Operand *getRetVal(){return retVal;}
     const string getFuncName(){return funcName;}
 
 private:
-    Operand retVal;
+    Operand *retVal;
     string funcName;
     string produceCode();
 };
@@ -169,10 +209,10 @@ private:
 class ParamCode:public InterCode{
 public:
     ParamCode(IRtype type, Operand *param);
-    const Operand getParam(){return param;}
+    const Operand* getParam(){return param;}
 
 private:
-    Operand param;
+    Operand* param;
     string produceCode();
 };
 
@@ -180,10 +220,10 @@ private:
 class ReadCode:public InterCode{
 public:
     ReadCode(IRtype type, Operand *OP);
-    const Operand getReadVal(){return val;}
+    const Operand* getReadVal(){return val;}
 
 private:
-    Operand val;
+    Operand *val;
     string produceCode();
 };
 
@@ -191,10 +231,10 @@ private:
 class WriteCode:public InterCode{
 public:
     WriteCode(IRtype type, Operand *val);
-    const Operand getWriteVal(){return val;}
+    const Operand* getWriteVal(){return val;}
 
 private:
-    Operand val;
+    Operand *val;
     string produceCode();
 };
 

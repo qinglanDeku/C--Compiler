@@ -35,7 +35,8 @@ void Translate::translateStmt(SyntaxTreeNode* stmtNode, Analyze* analyzeResult){
         translateCompSt(GetChild(stmtNode, 1), analyzeResult);
     }
     else if(ChildNumber(stmtNode) == 3){//return
-        Operand *t1 = new Operand(Operand::TEMPVARIABLE, newTemp());
+        TemporaryOP *t1 = new TemporaryOP(Operand::TEMP_VARIABLE, newTemp());
+        this->temporaryList.push_back(t1);
         translateExp(GetChild(stmtNode, 2), analyzeResult, t1);
         RetCode *code1 = new RetCode(InterCode::RETURN, t1);
         this->IRCodeList.push_back(code1);
@@ -93,18 +94,51 @@ void Translate::translateStmt(SyntaxTreeNode* stmtNode, Analyze* analyzeResult){
 void Translate::translateExp(SyntaxTreeNode* expNode, Analyze* analyzeResult, Operand* place){
     if(ChildNumber(expNode) == 1){//ID, #Int or #Float
         SyntaxTreeNode *fstChild(GetChild(expNode, 1));
-        if(fstChild->NodeUnit.LU.Lextype == LID){
+        if(fstChild->NodeUnit.LU.Lextype == LID){//exp -> ID
             string *fstChildName(new string(GetChild(expNode, 1)->NodeUnit.LU.IDname));
-            int var1No(analyzeResult->VariableTab.getItemNum(*fstChildName));
             varItem *var1(analyzeResult->VariableTab.FindItem(*fstChildName));
-            Operand *variable1(NULL);
-            if (var1->GetType() == INTARRAY || var1->GetType() == FLOATARRAY || var1->GetType() == STRUCTARRAY){
-                variable1 = new Operand(Operand::ADRESS, var1No);
+            int var1No(0);
+            VariableOP *varIR1(findVarInList(var1));
+            
+            if(varIR1 == NULL){
+                var1No = analyzeResult->VariableTab.getItemNum(*fstChildName);
+
+                if (var1->GetType() == INTARRAY || var1->GetType() == FLOATARRAY || var1->GetType() == STRUCTARRAY ||
+                    var1->GetType() == STRUCT)
+                {
+                    varIR1 = new VariableOP(Operand::ARRAY_FIRST_ELEMENT, var1No, var1);
+                    
+                }
+                else{
+                    varIR1 = new VariableOP(Operand::VARIABLE, var1No, var1);
+                }
+
+                this->variableList.push_back(varIR1);
             }
-            else{
-                variable1 = new Operand(Operand::VARIABLE, var1No);
+            if(place != NULL){
+                if(varIR1->getType() == Operand::VARIABLE){
+                    AssignCode *code1 = new AssignCode(InterCode::ASSIGN, place, varIR1);
+                    
+                    this->IRCodeList.push_back(code1);
+                }
+                else if(varIR1->getType() == Operand::ARRAY_FIRST_ELEMENT){
+                    AssignCode *code1 = new AssignCode(InterCode::ASSIGNLOC, place, varIR1);
+
+                    this->IRCodeList.push_back(code1);
+                }
+                else{
+                    AssignCode *code1 = new AssignCode(InterCode::ASSIGN, place, varIR1);
+
+                    this->IRCodeList.push_back(code1);
+                }
             }
-            /**/
-        }
+
+
+            delete fstChildName;
+        }    
+            
+            
+        else if(1)
+            ;
     }
 }

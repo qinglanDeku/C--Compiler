@@ -1,3 +1,4 @@
+#pragma once
 #include"InterCode.h"
 #include"../../semantic/include/SemanticAnalyze.h"
 class Translate{
@@ -14,8 +15,11 @@ public:
 
   private:
     list<InterCode*> IRCodeList;
+    list<VariableOP*> variableList;
+    list<TemporaryOP *> temporaryList;
     int tempVarNum;
     int labelNum;
     int newTemp(); //remember to delete the dynamic return val before not using it
     int newLabel();
+    VariableOP* findVarInList(varItem* item);
 };
