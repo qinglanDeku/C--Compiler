@@ -27,18 +27,60 @@ varItem::varItem(const varItem& a){
     }
     else;*/
     this->lineNo = a.lineNo;
+    this->basetypeSize = a.basetypeSize;
+    if(a.dimension != 0){
+        this->dimensionSize = new int[a.dimension];
+        for (int i(0); i < a.dimension; i++)
+        {
+            this->dimensionSize[i] = a.dimensionSize[i];
+        }
+    }
+    else
+        this->dimensionSize = NULL;
 }
+
+varItem::varItem(string name, TYPE type, int lineNo, int dimension):name(name), \
+type(type), lineNo(lineNo), dimension(dimension), structType(NULL)
+{
+    if(type == STRUCT || type == STRUCTARRAY){
+        ;
+    }
+    else if(type == VOID){
+        basetypeSize = 0;
+    }
+    else
+        basetypeSize = 4;
+    
+    if(dimension == 0)
+        this->dimensionSize = NULL;
+    else{
+        this->dimensionSize = new int[dimension];
+    }
+}
+
 
 void varItem::SetStructType(structItem* type){
     this->structType = type;
+    if(type != NULL)
+        basetypeSize = structType->getSize();
 }
 
-void varItem::print() const{
+void varItem::print(){
     cout<<"var name:"<<name<<"| "<<"var type:"<<StrTYPE[type]<<"| ";
     if(type == STRUCT || type == STRUCTARRAY){
         cout<<"struct name:"<<structType->GetName()<<"| ";
     }
-    cout<<"dimension:"<<dimension<<"| "<<"define line:"<<lineNo<<endl;
+    cout<<"dimension:"<<dimension<<" | ";
+    if(dimension > 0){
+        for (int i(0); i < dimension; i++)
+            cout << "Dimen" << i + 1 << ":" << dimensionSize[i] << " ;";
+        cout << endl;
+        cout << "variable size: " << getSize();
+    }
+    else{
+        cout << "variable size: " << getSize();
+    }
+    cout<<endl<<"define line:"<<lineNo<<endl;
 }
 
 
@@ -279,26 +321,31 @@ void FuncSymbolTab::PrintTab(){
      this->FstDecLine = a.FstDecLine;
      this->FstDefLine = a.FstDefLine;
      this->MemberVar.assign(a.MemberVar.begin(), a.MemberVar.end());
+     this->size = a.size;
  }
 
-varItem* structItem::GetMember(const string& name){
-    varItem* p = NULL;
-    for(int i(0); i<MemberVar.size(); i++){
-        if(MemberVar[i].GetName() == name){
-            p = &(MemberVar[i]);
-            break;
-        }
-    }
-    return p;
+ varItem *structItem::GetMember(const string &name)
+ {
+     varItem *p = NULL;
+     for (int i(0); i < MemberVar.size(); i++)
+     {
+         if (MemberVar[i].GetName() == name)
+         {
+             p = &(MemberVar[i]);
+             break;
+         }
+     }
+     return p;
  }
 
- void structItem::print() const{
+ void structItem::print(){
      cout<<"struct name:"<<name<<" |  " ;
      for(int i(0); i < MemberVar.size();i++){
         cout<<"struct Member"<<i+1<<" :";
         MemberVar[i].print();
     }
-    cout<<"|  "<<"struct DefLine:"<<FstDefLine<<endl;
+    cout << "struct size: " << getSize();
+    cout << endl<< "struct DefLine:" << FstDefLine << endl;
  }
 
  bool structItem::operator ==(structItem &a){

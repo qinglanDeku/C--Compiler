@@ -22,16 +22,17 @@ int main(int argc, char** argv){
         
         //yydebug = 1;        
         yyparse();
-    if(lexicalError == 1 || syntaxError == 1)
-        ;
-    else{
-    TraverseTree();
-    Analyze * A= new Analyze;
-    A->TraverseTree(TreeRoot);
-    A->CheckFunTab();
-    A->PrintSemanticError();
-    }
-        
+        if(lexicalError == 1 || syntaxError == 1)
+            ;
+        else{
+            TraverseTree();
+            Analyze * A= new Analyze;
+            A->TraverseTree(TreeRoot);
+            A->CheckFunTab();
+            A->PrintSemanticError();
+            //A->PrintVarSymbolTab();
+            //A->PrintStructType();
+        }
     }
 
     return 0;

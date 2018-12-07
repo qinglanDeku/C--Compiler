@@ -65,12 +65,18 @@ private:
 
 class ConstantOP:public Operand{
 public:
-    ConstantOP(OPType type):Operand(type, -1){
+    ConstantOP(OPType type, int ival):Operand(type, -1){
+        value.IVal = ival;
         name = produceName();
     }
 
-private:
-  string produceName();
+    ConstantOP(OPType type, float fval):Operand(type, -1){
+        value.FVal = fval;
+        name = produceName();
+    }
+
+  private:
+    string produceName();
 };
 
 class InterCode{

@@ -9,11 +9,16 @@ using std::list;
 class Analyze;
 
 class structItem;
-enum TYPE{
-    INT, FLOAT, STRUCT, INTARRAY, FLOATARRAY, STRUCTARRAY, VOID
-};      //all possible type used in c-- language 
-
-
+enum TYPE
+{
+    INT,
+    FLOAT,
+    STRUCT,
+    INTARRAY,
+    FLOATARRAY,
+    STRUCTARRAY,
+    VOID
+}; //all possible type used in c-- language
 
 /*variable symbol*/
 class varItem{
@@ -21,17 +26,45 @@ public:
     
     varItem(){}
     varItem(const varItem& a);      //all item class need copy construct function
-    varItem(string name, TYPE type, int lineNo, int dimension):name(name), \
-    type(type), lineNo(lineNo), dimension(dimension), structType(NULL){}
-    ~varItem(){}
+    varItem(string name, TYPE type, int lineNo, int dimension);
+    ~varItem() {}
 
     string GetName(){return name;}
     const TYPE GetType(){return type;}
     const int GetLineNo(){return lineNo;}
     const int GetDimension(){return dimension;}
-    structItem* GetStructType(){return structType;}
+    const int getSize(){
+        if(type == VOID){
+            return 0;
+        }
+        else if(type == INT || type == FLOAT || type == STRUCT)
+            return basetypeSize;
+        else{
+            int temp(basetypeSize);
+            for (int i(0); i < dimension; i++)
+            {
+                temp *= dimensionSize[i];
+            }
+            return temp;
+        }
+    }
+    void setDimensionSize(int DimNo, int size) { 
+        if(dimensionSize!= NULL)
+            dimensionSize[DimNo - 1] = size; 
+    }
+
+    int getDimensionSize(int DimNo){        //get size of each element of given Dimension
+        if(dimensionSize == NULL)
+            return 0;
+        int retval(this->basetypeSize);
+        for (int i(0); i < DimNo-1; i++){
+            retval *= dimensionSize[i];
+        }
+        return retval;
+    }
+    structItem *GetStructType() { return structType; }
     void SetStructType(structItem *type);//if Item type is struct
-    void print() const;
+    void print();
     friend bool operator == (const varItem &a, const varItem &b) ;        //judge if they are the same type
     bool operator != (varItem &a) {return !(*this == a);}
     
@@ -41,9 +74,9 @@ private:
     structItem* structType;      //only the var type is STRUCT
     int dimension;    //only the variable is array
     int lineNo;     //where the variable first appears
-
+    int basetypeSize;
+    int *dimensionSize;
 };
-
 
 /*function symbol*/
 class funItem{      //when first define or first declare a function, then create a funItem
@@ -146,20 +179,29 @@ public:
     int MemberNum() const {return MemberVar.size();}
     varItem* GetMember(int No){return &MemberVar[No - 1];}
     varItem* GetMember(const string& name);
-    void print() const;
+    void print();
     bool operator == (structItem &a);
     bool operator !=(structItem &a){
         return !(*this == a);
     }
-
-private:
+    int getSize(){return this->size;}
+    void calculateSz()
+    {
+        size = 0;
+        for (int i(0); i < MemberVar.size(); i++)
+        {
+            size += MemberVar[i].getSize();
+        }
+    }
+  private:
     string name;
     int FstDecLine;      //first declare line
     int FstDefLine;      /*first define line ,
     sometimes both lines are the same. If FstDefLine = -1, it was undefined */
     vector<varItem> MemberVar;      //struct member push both in symbletab and membervar
-};  
+    int size;
 
+};
 
 /*struct table*/
 class structTab{

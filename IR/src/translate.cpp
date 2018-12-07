@@ -118,27 +118,48 @@ void Translate::translateExp(SyntaxTreeNode* expNode, Analyze* analyzeResult, Op
             if(place != NULL){
                 if(varIR1->getType() == Operand::VARIABLE){
                     AssignCode *code1 = new AssignCode(InterCode::ASSIGN, place, varIR1);
-                    
                     this->IRCodeList.push_back(code1);
                 }
                 else if(varIR1->getType() == Operand::ARRAY_FIRST_ELEMENT){
+                    //maybe need check and set place type???
                     AssignCode *code1 = new AssignCode(InterCode::ASSIGNLOC, place, varIR1);
-
                     this->IRCodeList.push_back(code1);
                 }
                 else{
                     AssignCode *code1 = new AssignCode(InterCode::ASSIGN, place, varIR1);
-
                     this->IRCodeList.push_back(code1);
                 }
             }
-
 
             delete fstChildName;
         }    
             
             
-        else if(1)
+        else if(fstChild->NodeUnit.LU.Lextype == LINT){
+            if(place != NULL){
+            int constVal(fstChild->NodeUnit.LU.ival);
+            ConstantOP *constIR(new ConstantOP(Operand::ICONSTANT, constVal));
+            AssignCode *code1(new AssignCode(InterCode::ASSIGN, place, constIR));
+
+            this->IRCodeList.push_back(code1);
+            }
+        }
+
+        else{
+            if(place != NULL){
+                float constVal(fstChild->NodeUnit.LU.fval);
+                ConstantOP *constIR(new ConstantOP(Operand::FCONSTANT, constVal));
+                AssignCode *code1(new AssignCode(InterCode::ASSIGN, place, constIR));
+
+                this->IRCodeList.push_back(code1);
+            }
+        }
+    }
+
+    else{
+        SyntaxTreeNode *secNode(GetChild(expNode, 2));
+        if(secNode->NodeUnit.LU.Lextype == LLB){//array
             ;
+        }
     }
 }

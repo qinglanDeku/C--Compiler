@@ -1,0 +1,10 @@
+struct node{
+    int next;
+    int pre;
+    float a[3][3];
+    struct{
+        int b[2][2];
+    }c[2][4];
+};
+
+struct node d[4][4];

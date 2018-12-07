@@ -15,6 +15,6 @@ int main(){
     int three[1][1][1];
     float j[1][1];
     n.s[0][0].t = three;
-    n.val = m.val[0];
+    n.val = m.val;
     return add(j[0]);
 }

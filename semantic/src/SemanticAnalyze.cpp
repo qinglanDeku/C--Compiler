@@ -130,9 +130,21 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
                     
                     CountDimension = 0;
                     VarName = GetChild(VarDec, 1);
-                    
+                    int ArraySZ(10);
+                    int *DimenSzArray = new int[ArraySZ];
                     while(ChildNumber(VarDec) != 1){
-                        
+                        int temp(GetChild(VarDec, 3)->NodeUnit.LU.ival);
+                        if(CountDimension >= ArraySZ){
+                            ArraySZ += 10;
+                            int *tempArray = new int[ArraySZ];
+                            for (int i(0); i < CountDimension; i++)
+                            {
+                                tempArray[i] = DimenSzArray[i];
+                            }
+                            delete DimenSzArray;
+                            DimenSzArray = tempArray;
+                        }
+                        DimenSzArray[CountDimension] = temp;
                         VarDec = GetChild(VarDec, 1);
                         // assert(ChildNumber(VarDec) != 1);
                         VarName = GetChild(VarDec, 1);
@@ -173,16 +185,18 @@ void Analyze::AnalyzeExtDef(SyntaxTreeNode* ExtDefNode){
                         struct type*/
                             newVar.SetStructType(structType);
                         }
+                        for (int i(0); i < CountDimension; i++){
+                            newVar.setDimensionSize(i + 1, DimenSzArray[i]);
+                        }
                         VariableTab.AddItem(newVar);
                     }
                     
                     if(ChildNumber(ExtDecList) == 1)
                         break;
                     ExtDecList = GetChild(ExtDecList, 3);
-                    
-                }
-                while(1);
-                
+                    delete DimenSzArray;
+                    DimenSzArray = NULL;
+                } while (1);
             }
         }
         else{
@@ -250,8 +264,23 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
             CountDimension = 0;
             VarDec = GetChild(Dec,1);
             VarName = GetChild(VarDec, 1);
-            
-            while(ChildNumber(VarDec) != 1){
+            int ArraySZ(10);
+            int *DimenSzArray = new int[ArraySZ];
+            //not only get the dimension, but get size of each dimension
+            while (ChildNumber(VarDec) != 1)
+            {
+                int temp(GetChild(VarDec, 3)->NodeUnit.LU.ival);
+                if(CountDimension >= ArraySZ){
+                    ArraySZ += 10;
+                    int *tempArray = new int[ArraySZ];
+                    for (int i(0); i < CountDimension; i++)
+                    {
+                        tempArray[i] = DimenSzArray[i];
+                    }
+                    delete DimenSzArray;
+                    DimenSzArray = tempArray;
+                }
+                DimenSzArray[CountDimension] = temp;
                 VarDec = GetChild(VarDec, 1);
                 VarName = GetChild(VarDec, 1);
                 CountDimension += 1;
@@ -306,14 +335,19 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
             }
             //else{
             /*no redefine*/
-                varItem newMemVar(MemName, MemberType, Dec->lineno, CountDimension);
-                if(MembStructType != NULL){
-                /*struct type variable need to set the pointer pointing to this
-                struct type*/
-                    newMemVar.SetStructType(MembStructType);
-                }
-                OwnerStruct->AddMember(newMemVar);
-                VariableTab.AddItem(newMemVar);
+            varItem newMemVar(MemName, MemberType, Dec->lineno, CountDimension);
+            if(MembStructType != NULL){
+            /*struct type variable need to set the pointer pointing to this
+            struct type*/
+                newMemVar.SetStructType(MembStructType);
+            }
+            for (int i(0); i < CountDimension; i++){
+                newMemVar.setDimensionSize(i + 1, DimenSzArray[i]);
+            }
+            delete DimenSzArray;
+            DimenSzArray = NULL;
+            OwnerStruct->AddMember(newMemVar);
+            VariableTab.AddItem(newMemVar);
             //}
             
             if(ChildNumber(DecList) == 1)
@@ -326,7 +360,9 @@ structItem* Analyze::AnlzStruct(SyntaxTreeNode* StructSpecf, structItem* OwnerSt
         
         DefList = GetChild(DefList, 2);
     }
+    OwnerStruct->calculateSz();
     if(ifDef == UnDefinedStructType){
+        
         StructTab.AddItem(*OwnerStruct);
         return StructTab.GetBack();
     }
@@ -514,8 +550,21 @@ structItem* structType, int VariableType){
     string strVarName;
     TYPE varType(VOID);
 
-    
+    int ArraySZ(10);
+    int *DimenSzArray = new int[ArraySZ];
     while(ChildNumber(VarDec) != 1){
+        int temp(GetChild(VarDec, 3)->NodeUnit.LU.ival);
+        if(CountDimension >= ArraySZ){
+            ArraySZ += 10;
+            int *tempArray = new int[ArraySZ];
+            for (int i(0); i < CountDimension; i++)
+            {
+                tempArray[i] = DimenSzArray[i];
+            }
+            delete DimenSzArray;
+            DimenSzArray = tempArray;
+        }
+        DimenSzArray[CountDimension] = temp;
         VarDec = GetChild(VarDec, 1);
         VarName = GetChild(VarDec, 1);
         CountDimension += 1;
@@ -554,8 +603,11 @@ structItem* structType, int VariableType){
     
     varItem* newVar = new varItem(strVarName, varType, varDecNode->lineno, CountDimension);
     newVar->SetStructType(structType);
+    for (int i(0); i < CountDimension; i++){
+        newVar->setDimensionSize(i + 1, DimenSzArray[i]);
+    }
+    delete DimenSzArray;
     return newVar;
-
 }
 
 void Analyze::AnalyzeCompSt(SyntaxTreeNode* CompStNode, funItem* FatherFunc){
