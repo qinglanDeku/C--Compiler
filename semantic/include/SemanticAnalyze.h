@@ -19,7 +19,7 @@ public:
         StructTab.PrintList();
     }
     void CheckFunTab();
-
+    varItem AnalyzeExp(SyntaxTreeNode* ExpNode);
     VarSymbolTab VariableTab;
     FuncSymbolTab FunctionTab;
     structTab StructTab;
@@ -34,7 +34,7 @@ private:
     void AnalyzeExtDef(SyntaxTreeNode* Node);
     void AnalyzeDef(SyntaxTreeNode* Node);
     void AnalyzeStmt(SyntaxTreeNode* StmtNode, funItem* FatherFunc);
-    varItem AnalyzeExp(SyntaxTreeNode* ExpNode);
+    
     void AnlzFunc(SyntaxTreeNode* FuncNode, TYPE retType, structItem* structType);
     void AnlzFuncArgList(SyntaxTreeNode* ArgListNode, funItem& func, char AnlyStyle);
     vector<varItem>* AnalyzeArgs(SyntaxTreeNode* ArgsNode);

@@ -1,5 +1,6 @@
 #include"translate.h"
 #include<sstream>
+#include"../../semantic/include/SemanticAnalyze.h"
 using std::stringstream;
 /*************************class Translate*********************************/
 int Translate::newTemp(){
@@ -90,8 +91,8 @@ void Translate::translateStmt(SyntaxTreeNode* stmtNode, Analyze* analyzeResult){
         }
     }
 }
-
-void Translate::translateExp(SyntaxTreeNode* expNode, Analyze* analyzeResult, Operand* place){
+void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Operand *place)
+{
     if(ChildNumber(expNode) == 1){//ID, #Int or #Float
         SyntaxTreeNode *fstChild(GetChild(expNode, 1));
         if(fstChild->NodeUnit.LU.Lextype == LID){//exp -> ID
@@ -100,7 +101,7 @@ void Translate::translateExp(SyntaxTreeNode* expNode, Analyze* analyzeResult, Op
             int var1No(0);
             VariableOP *varIR1(findVarInList(var1));
             
-            if(varIR1 == NULL){
+            if(varIR1 == NULL){//this variable no been
                 var1No = analyzeResult->VariableTab.getItemNum(*fstChildName);
 
                 if (var1->GetType() == INTARRAY || var1->GetType() == FLOATARRAY || var1->GetType() == STRUCTARRAY ||
@@ -159,7 +160,22 @@ void Translate::translateExp(SyntaxTreeNode* expNode, Analyze* analyzeResult, Op
     else{
         SyntaxTreeNode *secNode(GetChild(expNode, 2));
         if(secNode->NodeUnit.LU.Lextype == LLB){//array
-            ;
+            SyntaxTreeNode *exp1(GetChild(expNode, 1));
+            SyntaxTreeNode *exp2(GetChild(expNode, 3));
+            Analyze *tempA(new Analyze);
+            varItem *exp1Var(new varItem);
+            varItem *exp2Var(new varItem);//remmber using a temp var in IR to replace exp2Var
+            *exp1Var = tempA->AnalyzeExp(exp1);
+            if(exp1Var->GetDimension > 0)
+            translateExp(exp1, analyzeResult, NULL);
+            TemporaryOP * t1(new TemporaryOP(Operand::TEMP_VARIABLE, newTemp()));
+            translateExp(exp2, analyzeResult, t1);
+
+            delete exp2Var;
+            delete exp1Var;
+            delete tempA;
+            delete exp2;
+            delete exp1;
         }
     }
 }
