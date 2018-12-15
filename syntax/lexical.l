@@ -1,5 +1,5 @@
 %{
-        
+        extern "C" int yylex(void);
         #include"syntax.h"
         #include"syntax.tab.h"
         #define YYSTYPE SyntaxTreeNode*

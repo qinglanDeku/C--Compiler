@@ -1,5 +1,6 @@
 #include"syntax.h"
 #include"../semantic/include/SemanticAnalyze.h"
+extern "C" int lexyy();
 extern int yydebug;
 extern void yyrestart(FILE* input_file);
 extern int yyparse(void);
@@ -30,8 +31,8 @@ int main(int argc, char** argv){
             A->TraverseTree(TreeRoot);
             A->CheckFunTab();
             A->PrintSemanticError();
-            //A->PrintVarSymbolTab();
-            //A->PrintStructType();
+            A->PrintVarSymbolTab();
+            A->PrintStructType();
         }
     }
 

@@ -1,5 +1,6 @@
 /*define && include*/
 %{
+    extern "C" int yylex(void);
     #include "syntax.h"
     #define YYSTYPE SyntaxTreeNode*
     //#define YYDEBUG 1

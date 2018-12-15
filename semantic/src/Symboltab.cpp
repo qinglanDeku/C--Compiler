@@ -78,8 +78,10 @@ void varItem::print(){
         cout << "variable size: " << getSize();
     }
     else{
-        cout << "variable size: " << getSize();
+        cout << "variable size: " << getSize()<<"|";
+        
     }
+    cout << "basetype size: " << this->basetypeSize;
     cout<<endl<<"define line:"<<lineNo<<endl;
 }
 
