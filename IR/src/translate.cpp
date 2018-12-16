@@ -1,5 +1,6 @@
 #include"translate.h"
 #include<sstream>
+#include<iostream>
 #include"../../semantic/include/SemanticAnalyze.h"
 using std::stringstream;
 /*************************class Translate*********************************/
@@ -157,20 +158,33 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
         }
     }
 
+    else if(ChildNumber(expNode) == 2){
+        
+    }
+
     else{
         SyntaxTreeNode *secNode(GetChild(expNode, 2));
-        if(secNode->NodeUnit.LU.Lextype == LLB){//array
+        if(secNode->NodeUnit.LU.Lextype == LLB){//array， but there are two kinds of array-visiting, in args or in stmt
             SyntaxTreeNode *exp1(GetChild(expNode, 1));
             SyntaxTreeNode *exp2(GetChild(expNode, 3));
             Analyze *tempA(new Analyze);
             varItem *exp1Var(new varItem);
             varItem *exp2Var(new varItem);//remmber using a temp var in IR to replace exp2Var
             *exp1Var = tempA->AnalyzeExp(exp1);
-            if(exp1Var->GetDimension > 0)
-            translateExp(exp1, analyzeResult, NULL);
-            TemporaryOP * t1(new TemporaryOP(Operand::TEMP_VARIABLE, newTemp()));
+            translateExp(exp1, analyzeResult, place);
+            /***place must be a tempvar?***/
+            TemporaryOP *t1(new TemporaryOP(Operand::TEMP_VARIABLE, newTemp()));
             translateExp(exp2, analyzeResult, t1);
-
+            TemporaryOP *t2(new TemporaryOP(Operand::TEMP_VARIABLE, newTemp()));
+            ConstantOP *c1(new ConstantOP(Operand::ICONSTANT, exp1Var->getBaseTypeSize()));
+            BinopCode *code1(new BinopCode(InterCode::MUL, t2, t1, c1));
+            if(place != NULL){
+                BinopCode *code2(new BinopCode(InterCode::PLUS, place, place, t2));
+                this->IRCodeList.push_back(code1);
+                this->IRCodeList.push_back(code2);
+            }
+            else
+                this->IRCodeList.push_back(code1);
             delete exp2Var;
             delete exp1Var;
             delete tempA;

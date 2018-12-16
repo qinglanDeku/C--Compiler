@@ -1,20 +1,16 @@
 struct node{
-    float val[1][1];
-    struct{
-        int t[1][2][3];
-    } s[2][3];
+    int a;
+    int c;
+    int b[10];
 };
-
-int add(float a[1]){
-    float sum = a[1] + a[3];
-    return sum > 0.7;
+int add(int temp[2]){
+    return temp[0] + temp[1];
 }
 
 int main(){
-    struct node n, m;
-    int three[1][1][1];
-    float j[1][1];
-    n.s[0][0].t = three;
-    n.val = m.val;
-    return add(j[0]);
+    struct node three[1][2][2];
+    struct node two[2][4][3];
+    int one[2][2][2];
+    two[1][0][0] = three[0][0][0];
+    return add(one[0][0]);
 }

@@ -48,6 +48,21 @@ public:
             return temp;
         }
     }
+    const int getBaseTypeSize(){
+        if(type == VOID){
+            return 0;
+        }
+        else if(type == INT || type == FLOAT || type == STRUCT)
+            return basetypeSize;
+        else{
+            int temp(basetypeSize);
+            for (int i(0); i < dimension - 1; i++)
+            {
+                temp *= dimensionSize[i];
+            }
+            return temp;
+        }
+    }
     void setDimensionSize(int DimNo, int size) { 
         if(dimensionSize!= NULL)
             dimensionSize[DimNo - 1] = size; 
@@ -62,6 +77,8 @@ public:
         }
         return retval;
     }
+
+    void setDimensionSize(const varItem &a);
     structItem *GetStructType() { return structType; }
     void SetStructType(structItem *type);//if Item type is struct
     void print();

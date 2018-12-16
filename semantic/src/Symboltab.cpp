@@ -85,6 +85,12 @@ void varItem::print(){
     cout<<endl<<"define line:"<<lineNo<<endl;
 }
 
+void varItem::setDimensionSize(const varItem& a){
+    for (int i(0);i < this->dimension;i++)
+    {
+        this->dimensionSize[i] = a.dimensionSize[i];
+    }
+}
 
 bool operator== (const varItem &a, const varItem &b) {
     if(a.type != STRUCT && a.type != STRUCTARRAY && a.type == b.type){

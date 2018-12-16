@@ -3,7 +3,7 @@
 #include"../../semantic/include/SemanticAnalyze.h"
 class Translate{
 public:
-    Translate():tempVarNum(0), labelNum(0){}
+    Translate():tempVarNum(0), labelNum(0), visitArray(false){}
     void printCodeList();
     
     void translateTree(SyntaxTreeNode* root, Analyze* analyzeResult);
@@ -21,5 +21,15 @@ public:
     int labelNum;
     int newTemp(); //remember to delete the dynamic return val before not using it
     int newLabel();
-    VariableOP* findVarInList(varItem* item);
+    bool visitArray; //visit array in args or stmt;0---stmt 1 ---args
+    VariableOP *findVarInList(varItem *item){
+      list<VariableOP *>::iterator it(variableList.begin());
+      while(it != variableList.end()){
+        if((*it)->getSymbolTabItem() == item){
+          return *it;
+        }
+        it++;
+      }
+      return NULL;
+    }
 };

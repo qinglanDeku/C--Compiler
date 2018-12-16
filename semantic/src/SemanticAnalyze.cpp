@@ -938,11 +938,15 @@ varItem Analyze::AnalyzeExp(SyntaxTreeNode* ExpNode){
                         retType = STRUCT;
                     varItem retval(Exp1.GetName(), retType, Exp1.GetLineNo(), Exp1.GetDimension() - 1);
                     retval.SetStructType(Exp1.GetStructType());
+                    //retval.setDimensionSize(Exp1);
+                    //std::cout << retval.GetDimension() << " " << retval.getBaseTypeSize() << std::endl;
                     return retval;
                 }
                 else{
                     varItem retval(Exp1.GetName(), Exp1.GetType(), Exp1.GetLineNo(), Exp1.GetDimension() - 1);
                     retval.SetStructType(Exp1.GetStructType());
+                    retval.setDimensionSize(Exp1);
+                    //std::cout << retval.GetDimension() << " " << retval.getBaseTypeSize() << std::endl;
                     return retval;
                 }     
             }
