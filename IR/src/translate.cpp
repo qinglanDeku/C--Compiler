@@ -26,12 +26,14 @@ void Translate::translateTree(SyntaxTreeNode *node, Analyze *analyzeResult)
     if(node == NULL)
         return;
     if(GetNodeType(node) == Syntactic){
+        
         string *tempNodeName = new string(node->NodeUnit.SU.name);
         if(*tempNodeName == "ExtDef"){
             translateExtDef(node, analyzeResult);
         }
         delete tempNodeName;
     }
+
     translateTree(node->NextSibling,analyzeResult);
     translateTree(node->child, analyzeResult);
 }
@@ -215,7 +217,7 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
         SyntaxTreeNode *secNode(GetChild(expNode, 2));
         if(secNode->NodeUnit.LU.Lextype == LLB){//array， but there are two kinds of array-visiting, in args or in stmt
             SyntaxTreeNode *exp1(GetChild(expNode, 1));
-            SyntaxTreeNode *exp2(GetChild(expNode, 3));
+            SyntaxTreeNode *exp22(GetChild(expNode, 3));
             Analyze *tempA(new Analyze(*analyzeResult));
             varItem *exp1Var(new varItem);
             varItem *exp2Var(new varItem);//remmber using a temp var in IR to replace exp2Var
@@ -223,7 +225,7 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
             translateExp(exp1, analyzeResult, place);
             /***place must be a tempvar?***/
             TemporaryOP *t1(new TemporaryOP(Operand::TEMP_VARIABLE, newTemp()));
-            translateExp(exp2, analyzeResult, t1);
+            translateExp(exp22, analyzeResult, t1);
             TemporaryOP *t2(new TemporaryOP(Operand::TEMP_VARIABLE, newTemp()));
             ConstantOP *c1(new ConstantOP(Operand::ICONSTANT, exp1Var->getBaseTypeSize()));
             BinopCode *code1(new BinopCode(InterCode::MUL, t2, t1, c1));
@@ -237,14 +239,12 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
             delete exp2Var;
             delete exp1Var;
             delete tempA;
-            delete exp2;
-            delete exp1;
         }
         else if(secNode->NodeUnit.LU.Lextype == LDOT){//struct type
             SyntaxTreeNode *fstNode(GetChild(expNode, 1));
             SyntaxTreeNode *trdNode(GetChild(expNode, 3));
             TemporaryOP *t1(new TemporaryOP(Operand::TEMP_ARRAY_ADRESS, newTemp()));
-            translateExp(fstNode, analyzeResult, t1);
+            translateExp(fstNode, analyzeResult, place);
             Analyze *tempA(new Analyze(*analyzeResult));
             varItem *exp1var(new varItem);
             *exp1var = tempA->AnalyzeExp(fstNode);
@@ -252,10 +252,16 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
             int offset(exp1var->GetStructType()->getOffset(trdNodeName));
             ConstantOP *c1(new ConstantOP(Operand::ICONSTANT, offset));
             TemporaryOP *t2(new TemporaryOP(Operand::TEMP_ARRAY_ADRESS, newTemp()));
-            BinopCode *code0(new BinopCode(InterCode::PLUS, t2, t1, c1));
-            AssignCode *code1(new AssignCode(InterCode::ASSIGNFROMLOC, place, t2));
+            /*BinopCode *code0(new BinopCode(InterCode::PLUS, t2, place, c1));
+            AssignCode *code1(NULL);
+            if (place->getType() == Operand::TEMP_ARRAY_ADRESS)
+                code1 = new AssignCode(InterCode::ASSIGN, place, t2);
+            else{
+                code1 = new AssignCode(InterCode::ASSIGNFROMLOC, place, t2);
+            }*/
+            BinopCode *code0(new BinopCode(InterCode::PLUS, place, place, c1));
             this->IRCodeList.push_back(code0);
-            this->IRCodeList.push_back(code1);
+            //this->IRCodeList.push_back(code1);
             delete exp1var;
             delete tempA;
         }
@@ -777,7 +783,6 @@ void Translate::translateDec(SyntaxTreeNode *DecNode, Analyze *analyzeResult){
 void Translate::translateCompSt(SyntaxTreeNode *compstNode, Analyze *analyzeResult){
     SyntaxTreeNode *DefListNode(GetChild(compstNode, 2));
     SyntaxTreeNode *StmtListNode(GetChild(compstNode, 3));
-    
     translateDefList(DefListNode, analyzeResult);
     translateStmtList(StmtListNode, analyzeResult);
 }

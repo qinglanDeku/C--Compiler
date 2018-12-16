@@ -275,7 +275,7 @@ WriteCode::WriteCode(IRtype type, Operand * val):InterCode(type){
 
 string WriteCode::produceCode(){
     string temp;
-    temp.append("WRTIE ");
+    temp.append("WRITE ");
     temp.append(val->getName());
     return temp;
 }

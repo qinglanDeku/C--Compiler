@@ -1,0 +1,19 @@
+struct node{
+    int a;
+    int b;
+    int c[2][2];
+};
+
+
+int func(struct node n2[5]){
+    int d = n2[2].c[0][0];
+    write(d);
+    return n2[2].c[0][0] + n2[2].c[0][1];
+}
+int main(){
+    struct node n1[5];
+    n1[2].c[0][0] = 100;
+    n1[2].c[0][1] = 100;
+    write(func(n1));
+    return 0;
+}
