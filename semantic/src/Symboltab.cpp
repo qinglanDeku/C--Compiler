@@ -37,10 +37,12 @@ varItem::varItem(const varItem& a){
     }
     else
         this->dimensionSize = NULL;
+
+    this->place = a.place;
 }
 
 varItem::varItem(string name, TYPE type, int lineNo, int dimension):name(name), \
-type(type), lineNo(lineNo), dimension(dimension), structType(NULL)
+type(type), lineNo(lineNo), dimension(dimension), structType(NULL),place(0)
 {
     if(type == STRUCT || type == STRUCTARRAY){
         ;
@@ -75,13 +77,15 @@ void varItem::print(){
         for (int i(0); i < dimension; i++)
             cout << "Dimen" << i + 1 << ":" << dimensionSize[i] << " ;";
         cout << endl;
-        cout << "variable size: " << getSize();
+        cout << "variable size: " << getSize()<<" | ";
     }
     else{
-        cout << "variable size: " << getSize()<<"|";
+        cout << "variable size: " << getSize()<<" | ";
         
     }
-    cout << "basetype size: " << this->basetypeSize;
+    cout << "basetype size: " << this->basetypeSize<<" | ";
+    cout << "Place: " << this->place << " | ";
+
     cout<<endl<<"define line:"<<lineNo<<endl;
 }
 
@@ -371,6 +375,15 @@ void FuncSymbolTab::PrintTab(){
      return true;
  }
 
+ int structItem::getOffset(string memberName){
+    int retval(0);
+    for (int i(0); i < MemberVar.size(); i++){
+        if(MemberVar[i].GetName() == memberName){
+            return retval;
+        }
+        retval += MemberVar[i].getSize();
+    }
+ }
 
 
 

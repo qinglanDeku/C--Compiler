@@ -88,7 +88,18 @@ string AssignCode::produceCode(){
     return tempCode;
 }
 
+/***************class RetCode**************/
+RetCode::RetCode(IRtype type, Operand* retVal):InterCode(type){
+    this->retVal = retVal;
+    this->code = produceCode();
+}
 
+string RetCode::produceCode(){
+    string temp;
+    temp.append("RETURN ");
+    temp.append(retVal->getName());
+    return temp;
+}
 
 /**********************class BinopCode**************/
 BinopCode::BinopCode(IRtype type, Operand* result, Operand *op1, Operand *op2):\
@@ -126,8 +137,8 @@ string FuncDecCode::produceCode(){
     temp.append("FUNCTION ");
     temp.append(funcName);
     temp.append(" :");
+    return temp;
 }
-
 
 
 
@@ -143,14 +154,32 @@ string LabelCode::produceCode(){
     string strNo;
     *ss << labelNo;
     *ss >> strNo;
-    temp.append("LABEL ");
+    temp.append("LABEL label");
     temp.append(strNo);
     temp.append(" :");
     delete ss;
     return temp;
 }
 
+/*************************DecCode**********************/
+DecCode::DecCode(IRtype type, Operand* OP, int size):InterCode(type){
+    this->OP = OP;
+    this->size = size;
+    this->code = produceCode();
+}
 
+string DecCode::produceCode(){
+    string temp;
+    temp.append("DEC ");
+    temp.append(OP->getName());
+    temp.append(" ");
+    stringstream ss;
+    string intStr;
+    ss << this->size;
+    ss >> intStr;
+    temp.append(intStr);
+    return temp;
+}
 
 /*****************************class GotoCode**********************************/
 GotoCode::GotoCode(IRtype type, int dstLabel):\
@@ -163,6 +192,7 @@ string GotoCode::produceCode(){
     stringstream *ss = new stringstream;
     string strLabel;
     temp.append("GOTO ");
+    temp.append("label");
     *ss << this->dstLabel;
     *ss>>strLabel;
     temp.append(strLabel);
@@ -171,7 +201,7 @@ string GotoCode::produceCode(){
 }
 
 /***************************class CondCode****************************/
-CondCode::CondCode(IRtype type, Operand *op1, Operand *op2, Relop relop, int dstLabel):\
+CondCode::CondCode(IRtype type, Operand *op1, Operand *op2, string relop, int dstLabel):\
 InterCode(type), op1(op1), op2(op2), relop(relop), dstLabel(dstLabel)
 {
     this->code = produceCode();
@@ -185,20 +215,10 @@ string CondCode::produceCode(){
     temp.append("IF ");
     temp.append(op1->getName());
     temp.append(" ");
-    if(relop == GE)
-        temp.append(" >= ");
-    else if(relop == G)
-        temp.append(" > ");
-    else if(relop == LE)
-        temp.append(" <= ");
-    else if(relop == L)
-        temp.append(" < ");
-    else if(relop == EQ)
-        temp.append(" = ");
-    else
-        temp.append(" != ");
+    temp.append(relop);
+    temp.append(" ");
     temp.append(op2->getName());
-    temp.append(" GOTO ");
+    temp.append(" GOTO label");
     *ss<<this->dstLabel;
     *ss >>*strLabel;
     temp.append(*strLabel);
@@ -209,4 +229,81 @@ string CondCode::produceCode(){
     return temp;
 }
 
+/******************************class readCode***************************/
+ReadCode::ReadCode(IRtype type, Operand *op):InterCode(type){
+    val = op;
+    this->code = produceCode();
+}
 
+string ReadCode::produceCode(){
+    string temp;
+    temp.append("READ ");
+    if(val != NULL)
+        temp.append(val->getName());
+    return temp;
+}
+
+
+/*****************************class CallCode******************/
+CallCode::CallCode(IRtype type, Operand *retVal, string funcName):InterCode(type){
+    this->retVal = retVal;
+    this->funcName = funcName;
+    this->code = produceCode();
+}
+
+string CallCode::produceCode(){
+    string temp;
+    if(retVal == NULL){
+        temp.append("nomean");
+        temp.append(" := CALL ");
+        temp.append(this->funcName);
+        return temp;
+    }
+    if(retVal->getType() == Operand::TEMP_ARRAY_ADRESS)
+        temp.append("*");
+    temp.append(retVal->getName());
+    temp.append(" := CALL ");
+    temp.append(this->funcName);
+    return temp;
+}
+
+/************************************writeCode*************************************/
+WriteCode::WriteCode(IRtype type, Operand * val):InterCode(type){
+    this->val = val;
+    this->code = produceCode();
+}
+
+string WriteCode::produceCode(){
+    string temp;
+    temp.append("WRTIE ");
+    temp.append(val->getName());
+    return temp;
+}
+
+
+/**************argCode*********************/
+ArgCode::ArgCode(IRtype type, Operand* arg):InterCode(type){
+    this->arg = arg;
+    this->code = produceCode();
+}
+
+string ArgCode::produceCode(){
+    string temp;
+    temp.append("ARG ");
+    if(arg->getType() == Operand::ARRAY_FIRST_ELEMENT)
+        temp.append("&");
+    temp.append(arg->getName());
+    return temp;
+}
+
+/**********paramCode**************/
+ParamCode::ParamCode(IRtype type, Operand *param):InterCode(type){
+    this->param = param;
+    this ->code = produceCode();
+}
+string ParamCode::produceCode(){
+    string temp;
+    temp.append("PARAM ");
+    temp.append(param->getName());
+    return temp;
+}

@@ -84,8 +84,15 @@ public:
     void print();
     friend bool operator == (const varItem &a, const varItem &b) ;        //judge if they are the same type
     bool operator != (varItem &a) {return !(*this == a);}
-    
-private:
+    void setPlace(){
+        place = 1;
+    }
+    void resetPlace(){
+        place = 0;
+    }
+    int getPlace() { return place; }
+
+  private:
     string name;
     TYPE type;
     structItem* structType;      //only the var type is STRUCT
@@ -93,6 +100,7 @@ private:
     int lineNo;     //where the variable first appears
     int basetypeSize;
     int *dimensionSize;
+    int place; //    1 means in function args, 0 means in stmt;
 };
 
 /*function symbol*/
@@ -210,6 +218,8 @@ public:
             size += MemberVar[i].getSize();
         }
     }
+    int getOffset(string memberName);
+
   private:
     string name;
     int FstDecLine;      //first declare line

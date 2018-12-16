@@ -526,8 +526,10 @@ void Analyze::AnlzFuncArgList(SyntaxTreeNode* ArgListNode, funItem& func, char A
             //}
             //else{
                 func.pushDefArg(*newArg);
-                if(AnlzStyle == AnlzDef)
+                if(AnlzStyle == AnlzDef){
+                    newArg->setPlace();
                     VariableTab.AddItem(*newArg);
+                }
                 delete newArg;
             //}
             if(ChildNumber(varList) == 1)
@@ -1052,6 +1054,8 @@ vector<varItem>* Analyze::AnalyzeArgs(SyntaxTreeNode* ArgsNode){
 }
 
 void Analyze::CheckFunTab(){
+
+
     list<funItem>::iterator it = FunctionTab.table.begin();
     while(it != FunctionTab.table.end()){
         if(it->NotDef()){
@@ -1062,19 +1066,6 @@ void Analyze::CheckFunTab(){
         }
         it++;
     }
-    string *str_read = new string("read");
-    string *str_write = new string("write");
-    varItem* write_arg = new varItem("output", INT, 0, 0);
-    funItem* read = new funItem(*str_read, INT, 0, 0);
-    funItem* write = new funItem(*str_write, INT, 0, 0);
-    write->pushDefArg(*write_arg);
-    FunctionTab.AddItem(*read);
-    FunctionTab.AddItem(*write);
-    delete write;
-    delete read;
-    delete write_arg;
-    delete str_read;
-    delete str_write;
 
 
 }

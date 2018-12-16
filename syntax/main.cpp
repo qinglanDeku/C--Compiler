@@ -1,5 +1,6 @@
 #include"syntax.h"
 #include"../semantic/include/SemanticAnalyze.h"
+#include"../IR/include/translate.h"
 extern "C" int lexyy();
 extern int yydebug;
 extern void yyrestart(FILE* input_file);
@@ -31,8 +32,11 @@ int main(int argc, char** argv){
             A->TraverseTree(TreeRoot);
             A->CheckFunTab();
             A->PrintSemanticError();
-            A->PrintVarSymbolTab();
-            A->PrintStructType();
+            /*A->PrintVarSymbolTab();
+            A->PrintStructType();*/
+            Translate *T = new Translate;
+            T->translateTree(TreeRoot, A);
+            T->printCodeList();
         }
     }
 

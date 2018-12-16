@@ -157,14 +157,14 @@ public:
     enum Relop{
         L, LE, G, GE, EQ, NE
     };
-    CondCode(IRtype type, Operand *op1, Operand *op2, Relop relop, int dstLabel);
+    CondCode(IRtype type, Operand *op1, Operand *op2, string relop, int dstLabel);
     Operand *getOp1(){return op1;}
     Operand *getOp2(){return op2;}
-    Relop getRelop(){return relop;}
+    string getRelop(){return relop;}
     int getDst(){return dstLabel;}
 private:
     Operand *op1, *op2;
-    Relop relop;
+    string relop;
     int dstLabel;
     string produceCode();
 };
@@ -191,10 +191,10 @@ private:
 
 class ArgCode:public InterCode{
 public:
-    ArgCode(IRtype type, Operand* arg);
-    const Operand *getArg(){return arg;}
+    ArgCode(IRtype type, Operand *arg);
+    //const Operand *getArg(){return arg;}
 private:
-    Operand *arg;
+    Operand* arg;
     string produceCode();
 };
 
@@ -237,7 +237,7 @@ private:
 class WriteCode:public InterCode{
 public:
     WriteCode(IRtype type, Operand *val);
-    const Operand* getWriteVal(){return val;}
+    //const Operand* getWriteVal(){return val;}
 
 private:
     Operand *val;

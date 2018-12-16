@@ -3,7 +3,7 @@ struct node{
     int c;
     int b[10];
 };
-int add(int temp[2]){
+int add(int temp[2], int haha){
     return temp[0] + temp[1];
 }
 
