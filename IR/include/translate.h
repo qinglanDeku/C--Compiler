@@ -18,6 +18,7 @@ public:
     void translateDefList(SyntaxTreeNode *DefListNode, Analyze *analyzeResult);
     void translateStmtList(SyntaxTreeNode *StmtListNode, Analyze *analyzeResult);
     void translateDef(SyntaxTreeNode *DefNode, Analyze *analyzeResult);
+    static string turnoverRelopStr(const string &relopStr);
 
   private:
     list<InterCode*> IRCodeList;

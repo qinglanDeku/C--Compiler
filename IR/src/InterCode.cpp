@@ -22,6 +22,13 @@ string VariableOP::produceName(){
     return temp;
 }
 
+VariableOP::VariableOP(const VariableOP& a){
+    type = a.type;
+    value = a.value;
+    No = a.No;
+    name = a.name;
+    counterPart = a.counterPart;
+}
 
 string TemporaryOP::produceName(){
     string temp;

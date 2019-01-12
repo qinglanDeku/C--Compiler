@@ -137,8 +137,9 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
             }
             if(place != NULL){
                 if(varIR1->getType() == Operand::VARIABLE){
-                    AssignCode *code1 = new AssignCode(InterCode::ASSIGN, place, varIR1);
-                    this->IRCodeList.push_back(code1);
+                   // AssignCode *code1 = new AssignCode(InterCode::ASSIGN, place, varIR1);
+                   // this->IRCodeList.push_back(code1);
+                   *place = *varIR1;
                 }
                 else if(varIR1->getType() == Operand::ARRAY_FIRST_ELEMENT){
                     //maybe need check and set place type???
@@ -161,9 +162,11 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
             if(place != NULL){
             int constVal(fstChild->NodeUnit.LU.ival);
             ConstantOP *constIR(new ConstantOP(Operand::ICONSTANT, constVal));
-            AssignCode *code1(new AssignCode(InterCode::ASSIGN, place, constIR));
+            *place = *constIR;
+            delete constIR;
+            //AssignCode *code1(new AssignCode(InterCode::ASSIGN, place, constIR));
 
-            this->IRCodeList.push_back(code1);
+            //this->IRCodeList.push_back(code1);
             }
         }
 
@@ -171,9 +174,12 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
             if(place != NULL){
                 float constVal(fstChild->NodeUnit.LU.fval);
                 ConstantOP *constIR(new ConstantOP(Operand::FCONSTANT, constVal));
-                AssignCode *code1(new AssignCode(InterCode::ASSIGN, place, constIR));
+                //AssignCode *code1(new AssignCode(InterCode::ASSIGN, place, constIR));
 
-                this->IRCodeList.push_back(code1);
+                //this->IRCodeList.push_back(code1);
+
+                *place = *constIR;
+                delete constIR;
             }
         }
     }

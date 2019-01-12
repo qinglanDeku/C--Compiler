@@ -32,6 +32,8 @@ int main(int argc, char** argv){
             A->TraverseTree(TreeRoot);
             A->CheckFunTab();
             A->PrintSemanticError();
+            if(A->ErrorList.size() != 0)
+                break;
             /*A->PrintVarSymbolTab();
             A->PrintStructType();*/
             Translate *T = new Translate;

@@ -22,6 +22,12 @@ public:
     void setType(OPType newtype){if(type == TEMP_VARIABLE)
             type = newtype;
     }
+    void operator= (const Operand&a){
+        type = a.type;
+        value = a.value;
+        No = a.No;
+        name = a.name;
+    }
 
   protected:
     OPType type;
@@ -45,6 +51,8 @@ public:
     {
         name = produceName();
     }
+
+    VariableOP(const VariableOP &a);
 
     const varItem *getSymbolTabItem() { return counterPart; }
 
