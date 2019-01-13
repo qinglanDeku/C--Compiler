@@ -831,3 +831,12 @@ void Translate::printCodeList(){
         it++;
     }
 }
+
+void Translate::printVariable(){
+    list<VariableOP *>::iterator p = variableList.begin();
+    while(p != variableList.end()){
+        string temp = (*p)->getSymbolTabItem()->GetName();
+        cout << (*p)->getName() <<temp << endl;
+        p++;
+    }
+}

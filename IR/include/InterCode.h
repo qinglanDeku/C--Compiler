@@ -54,10 +54,10 @@ public:
 
     VariableOP(const VariableOP &a);
 
-    const varItem *getSymbolTabItem() { return counterPart; }
+    varItem * getSymbolTabItem() { return counterPart; }
 
   private:
-    const varItem *counterPart;
+    varItem *counterPart;
     string produceName();
 };
 

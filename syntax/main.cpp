@@ -38,7 +38,7 @@ int main(int argc, char** argv){
             A->PrintStructType();*/
             Translate *T = new Translate;
             T->translateTree(TreeRoot, A);
-            T->printCodeList();
+            T->printVariable();
         }
     }
 

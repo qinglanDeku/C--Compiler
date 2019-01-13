@@ -61,31 +61,32 @@ LABEL label16 :
 IF v9 < #6 GOTO label17
 GOTO label18
 LABEL label17 :
-t45 := v1
+t45 := &v6
 t47 := v7 * #120
 t45 := t45 + t47
 t49 := v8 * #24
 t45 := t45 + t49
 t51 := v9 * #4
 t45 := t45 + t51
-*t45 := v10
-t53 := v10 + #1
-v10 := t53
-t56 := v9 + #1
-v9 := t56
+t52 := v10 - #1
+*t45 := t52
+t55 := v10 + #1
+v10 := t55
+t58 := v9 + #1
+v9 := t58
 GOTO label16
 LABEL label18 :
-t59 := v8 + #1
-v8 := t59
+t61 := v8 + #1
+v8 := t61
 GOTO label13
 LABEL label15 :
-t62 := v7 + #1
-v7 := t62
+t64 := v7 + #1
+v7 := t64
 GOTO label10
 LABEL label12 :
-t66 := &v6
-t67 := t66
-ARG t67
-t65 := CALL matrixSum
-WRITE t65
+t68 := &v6
+t69 := t68
+ARG t69
+t67 := CALL matrixSum
+WRITE t67
 RETURN #1

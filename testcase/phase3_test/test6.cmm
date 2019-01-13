@@ -29,7 +29,7 @@ int main(){
         while(y < 5){
             z = 0;
             while(z < 6){
-               matrix[x][y][z] = p;
+               m[x][y][z] = p - 1;
                p = p+ 1;
                 z = z + 1;
             }
