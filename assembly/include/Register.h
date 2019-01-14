@@ -19,6 +19,9 @@ class Register
         state = newState;
         return old;
     }
+    string getRegName(){
+        return name;
+    }
     void setVar(Variable &var);
     string setVarName(string varName)
     {
@@ -26,8 +29,9 @@ class Register
         variableName = varName;
         return oldName;
     }
-    unsigned int setAddress(unsigned newAddr){
-        unsigned int old = address;
+    string getVarName() { return variableName; }
+    int setAddress(int newAddr){
+        int old = address;
         address = newAddr;
         return old;
     }
@@ -36,11 +40,12 @@ class Register
         value = newVal;
         return old;
     }
+    int getValue() { return value; }
 
   private:
     bool state;           //0 means spare, 1 means occupied;
     string name;          //  name of register
-    unsigned int address; // address of the value which is a variable in reg;
+    int address; // address of the value which is a variable in reg;
     string variableName;  // name of variable stored
     int value;            // value of variable stroed; if  variable is a array, then the value may be void
 };
@@ -49,9 +54,14 @@ class MipsRegisterList{
 public:
   MipsRegisterList();
   ~MipsRegisterList();
-  Register &getReg(int i);
-  Register &getReg(const string &name);
+  Register *getReg(int i);
+  Register *getReg(const string &name);
+  Register& allocateReg();
+  void retractReg(int i);
+  void retractReg(const string &name);
+
   static string Mips32Regs[32];
+
 private:
   vector<Register> regs;
   deque<Register*> emptyRegList;

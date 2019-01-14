@@ -1,6 +1,7 @@
 #pragma once
 #include<string>
 #include<list>
+#include"../../semantic/include/Symboltab.h"
 using std::string;
 using std::list;
 class varItem;
@@ -82,6 +83,7 @@ public:
         value.FVal = fval;
         name = produceName();
     }
+    int getIntVal() { return value.IVal; }
 
   private:
     string produceName();
@@ -101,9 +103,10 @@ public:
         return type;
     }
     const string getCode(){return code;}
-    
+    virtual Operand* getOperand(int number) = 0; //get the operand at number position
+    IRtype getOperator() { return getType(); }
 
-protected:
+  protected:
     IRtype type;
     string code;
 };
@@ -113,7 +116,16 @@ public:
     AssignCode(IRtype type, Operand *left, Operand *right);
     const Operand* getLeftOp(){return left;}
     const Operand* getRightOp(){return right;}
-private:
+    Operand* getOperand(int number){
+        if(number == 1)
+            return left;
+        else if (number == 2)
+            return right;
+        else
+            return nullptr;
+    }
+
+  private:
     Operand *left, *right; 
     string produceCode();
 };
@@ -124,8 +136,19 @@ public:
     const Operand* getResult(){return result;}
     const Operand* getOp1(){return op1;}
     const Operand* getOp2(){return op2;}
+    Operand* getOperand(int number){
+        if(number == 1)
+            return result;
+        else if(number == 2)
+            return op1;
+        else if(number == 3)
+            return op2;
+        else
+            return nullptr;
+    }
 
-private:
+
+  private:
     Operand *result, *op1, *op2;
     string produceCode();
 };
@@ -134,8 +157,12 @@ class FuncDecCode:public InterCode{
 public:
     FuncDecCode(IRtype type, string *funcName);
     const string getFuncName(){return funcName;}
+    Operand* getOperand(int number){
+        return nullptr;
+    }
 
-private:
+
+  private:
     string funcName;
     string produceCode();
 };
@@ -144,8 +171,9 @@ class LabelCode:public InterCode{
 public:
     LabelCode(IRtype type, int labelNo);
     const int getLabelNo(){return labelNo;}
+    Operand *getOperand(int number) { return nullptr; }
 
-private:
+  private:
     int labelNo;
     string produceCode();
 };
@@ -154,8 +182,9 @@ class GotoCode:public InterCode{
 public:
     GotoCode(IRtype type, int dstLabel);
     const int getDst(){return dstLabel;}
+    Operand *getOperand(int number) { return nullptr; }
 
-private:
+  private:
     int dstLabel;
     string produceCode();
 };
@@ -170,7 +199,16 @@ public:
     Operand *getOp2(){return op2;}
     string getRelop(){return relop;}
     int getDst(){return dstLabel;}
-private:
+    Operand* getOperand(int number){
+        if(number == 1)
+            return op1;
+        else if(number == 2)
+            return op2;
+        else
+            return nullptr;
+    }
+
+  private:
     Operand *op1, *op2;
     string relop;
     int dstLabel;
@@ -181,7 +219,14 @@ class RetCode:public InterCode{
 public:
     RetCode(IRtype type, Operand* retVal);
     const Operand *getRetVal(){return retVal;}
-private:
+    Operand* getOperand(int number){
+        if(number == 1)
+            return retVal;
+        else
+            return nullptr;
+    }
+
+  private:
     Operand *retVal;
     string produceCode();
 };
@@ -191,7 +236,14 @@ public:
     DecCode(IRtype type, Operand* OP, int size);
     const Operand *getOp(){return OP;}
     const int getSize(){return size;}
-private:
+    Operand* getOperand(int number){
+        if(number == 1)
+            return OP;
+        else
+            return nullptr;
+    }
+
+  private:
     Operand *OP;
     int size;
     string produceCode();
@@ -201,7 +253,14 @@ class ArgCode:public InterCode{
 public:
     ArgCode(IRtype type, Operand *arg);
     //const Operand *getArg(){return arg;}
-private:
+    Operand* getOperand(int number){
+        if(number == 1)
+            return arg;
+        else
+            return nullptr;
+    }
+
+  private:
     Operand* arg;
     string produceCode();
 };
@@ -212,8 +271,14 @@ public:
     CallCode(IRtype type, Operand *retVal, string funcName);
     const Operand *getRetVal(){return retVal;}
     const string getFuncName(){return funcName;}
+    Operand* getOperand(int number){
+        if (number == 1)
+            return retVal;
+        else
+            return nullptr;
+    }
 
-private:
+  private:
     Operand *retVal;
     string funcName;
     string produceCode();
@@ -224,8 +289,14 @@ class ParamCode:public InterCode{
 public:
     ParamCode(IRtype type, Operand *param);
     const Operand* getParam(){return param;}
+    Operand* getOperand(int number){
+        if(number == 1)
+            return param;
+        else
+            return nullptr;
+    }
 
-private:
+  private:
     Operand* param;
     string produceCode();
 };
@@ -235,8 +306,14 @@ class ReadCode:public InterCode{
 public:
     ReadCode(IRtype type, Operand *OP);
     const Operand* getReadVal(){return val;}
+    Operand* getOperand(int number){
+        if (number == 1)
+            return val;
+        else
+            return nullptr;
+    }
 
-private:
+  private:
     Operand *val;
     string produceCode();
 };
@@ -246,8 +323,14 @@ class WriteCode:public InterCode{
 public:
     WriteCode(IRtype type, Operand *val);
     //const Operand* getWriteVal(){return val;}
+    Operand* getOperand(int number){
+        if(number == 1)
+            return val;
+        else
+            return nullptr;
+    }
 
-private:
+  private:
     Operand *val;
     string produceCode();
 };

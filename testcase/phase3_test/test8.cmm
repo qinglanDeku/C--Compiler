@@ -1,0 +1,10 @@
+int add(int a, int b, int c){
+    return a+b + c;
+}
+int main(){
+    int x = read();
+    int y = read();
+    int z;
+    write(add(x,y,4));
+    return 0;
+}

@@ -1,0 +1,18 @@
+FUNCTION add :
+PARAM v3
+PARAM v2
+PARAM v1
+t2 := v1 + v2
+t1 := t2 + v3
+RETURN t1
+FUNCTION main :
+READ t6
+v4 := t6
+READ t7
+v5 := t7
+ARG v4
+ARG v5
+ARG v6
+t8 := CALL add
+WRITE t8
+RETURN #0
