@@ -8,13 +8,25 @@ using std::endl;
 using std::ofstream;
 using std::stringstream;
 /*****************class Variable*******************/
-Variable::Variable():origin(nullptr), addr(0),reg(0){}
+Variable::Variable() : addr(0), reg(0), name(""), type(Operand::VARIABLE), size(0), baseSize(4){
+}
 
-Variable::Variable(int addr, int reg, VariableOP *var):origin(var), addr(addr),reg(reg){}
+Variable::Variable(int addr, int reg, Operand*var):addr(addr),reg(reg){
+    name = var->getName();
+    type = var->getType();
+    if(type == Operand::VARIABLE || type == Operand::ARRAY_ADRESS || type == Operand::ARRAY_FIRST_ELEMENT){
+        VariableOP *temp_ptr = (VariableOP *)var;
+        size = temp_ptr->getSymbolTabItem()->getSize();
+    }
+    else{
+        size = 4;
+    }
+    baseSize = 4;
+}
 
-Variable::Variable(const Variable& a):origin(a.origin), addr(a.addr),reg(a.reg){}
+Variable::Variable(const Variable& a):addr(a.addr),reg(a.reg),name(a.name), type(a.type), size(a.size), baseSize(a.baseSize){}
 
-Variable::~Variable() { origin = nullptr; }
+Variable::~Variable() {}
 
 
 /*******************class VariableList**********************/
@@ -134,7 +146,11 @@ string Assembly::AsmHead[22] = {
 };
 
 void Assembly::printAssembly(){
-    for (int i(0); i < AssemblyCodeList.size(); i++){
+    for (int i(0); i < 22;i++){
+        cout << AsmHead[i] << endl;
+    }
+    for (int i(0); i < AssemblyCodeList.size(); i++)
+    {
         cout << AssemblyCodeList[i].getStrAsmCode() << endl;
     }
 }
@@ -159,7 +175,12 @@ void Assembly::outputAssembly(const string& filename){
         std::cerr << "error when output \".S\" file" << endl;
         exit(-1);
     }
-    for (int i(0); i < AssemblyCodeList.size(); i++){
+    for (int i(0); i < 22; i++){
+        out << AsmHead[i] << endl;
+    }
+
+    for (int i(0); i < AssemblyCodeList.size(); i++)
+    {
         out << AssemblyCodeList[i].getStrAsmCode() << endl;
     }
     out.close();
@@ -237,7 +258,7 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
         }
         else{
             p = it;
-            int offset_of_param(8);
+            int offset_of_param(4);
             while (num_of_param > 4)
             {
                 Operand *temp = (*p)->getOperand(1);
@@ -269,34 +290,35 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
         while (p != IRCodeList.end() && (*p)->getType() != InterCode::FUNC)
         {
             if((*p)->getType() == InterCode::ASSIGN){
-
+                createSpace((*p)->getOperand(1), bp_offset);
             }
             else if((*p)->getType() == InterCode::ASSIGNFROMLOC){
-                
+                createSpace((*p)->getOperand(1), bp_offset);
             }
             else if((*p)->getType() == InterCode::ASSIGNLOC){
-
+                createSpace((*p)->getOperand(1), bp_offset);
             }
             else if((*p)->getType() == InterCode::PLUS){
-
+                createSpace((*p)->getOperand(1), bp_offset);       
             }
             else if((*p)->getType() == InterCode::MUL){
-
+                createSpace((*p)->getOperand(1), bp_offset);
             }
             else if((*p)->getType() == InterCode::SUB){
-
+                createSpace((*p)->getOperand(1), bp_offset);
             }
             else if((*p)->getType() == InterCode::DIV){
-
+                createSpace((*p)->getOperand(1), bp_offset);
             }
             else if((*p)->getType() == InterCode::DEC){
-
+                createSpace((*p)->getOperand(1), bp_offset);
             }
             else if((*p)->getType() == InterCode::READ){
-
+                createSpace((*p)->getOperand(1), bp_offset);
             }
+            p++;
         }
-
+        subSp(-bp_offset);
     }
     else if((*it)->getType() == InterCode::ARG){//遇到ARG表示要开始传递函数，但是也要单独考虑没有参数的函数
         /*保存a0-a3*/
@@ -733,7 +755,7 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
     }
 
     else if((*it)->getType() == InterCode::ASSIGN){
-
+        
     }
     else if((*it)->getType() == InterCode::ASSIGNFROMLOC){
         
@@ -912,4 +934,14 @@ int Assembly::turnStrToInt(string str){
 void Assembly::errorRoutine(string errorInfo){
     std::cerr << errorInfo << endl;
     exit(-1);
+}
+
+void Assembly::createSpace(Operand *var, int &bp_offset){
+    if(!asmVarList.ifVarInList(var->getName())){
+        Variable *new_var = new Variable(0, 0, var);
+        bp_offset -= new_var->getVarSize();
+        new_var->setAddr(bp_offset);
+        asmVarList.addVar(*new_var);
+        clearDynamicVar(new_var);
+    }        
 }

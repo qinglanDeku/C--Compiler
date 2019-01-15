@@ -836,7 +836,7 @@ void Translate::printVariable(){
     list<VariableOP *>::iterator p = variableList.begin();
     while(p != variableList.end()){
         string temp = (*p)->getSymbolTabItem()->GetName();
-        cout << (*p)->getName()<<" " <<temp << " "<<(*p)->getType()<< endl;
+        cout << (*p)->getName()<<" " <<temp << " "<<(*p)->getType()<<" | "<<(*p)->getSymbolTabItem()->getSize()<<endl;
         p++;
     }
 }

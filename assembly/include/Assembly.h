@@ -15,13 +15,17 @@ class Variable{
 public:
 
   Variable();
-  Variable(int addr, int reg, VariableOP*var);
+  Variable(int addr, int reg, Operand *var);
   Variable(const Variable &a);
   ~Variable();
   int getAddr() { return addr; }
-  string getName() { return origin->getName(); }
-  Operand::OPType getVarType() { return origin->getType(); }
-  int getVarSize() { return origin->getSymbolTabItem()->getSize(); }
+  int setAddr(int newaddr) { int ret = addr;
+      addr = newaddr;
+      return ret;
+  }
+  string getName() { return name; }
+  Operand::OPType getVarType() { return type; }
+  int getVarSize() { return size; }
   int getReg() { return reg; }
   int setReg(int newval){
       int retval = reg;
@@ -29,22 +33,19 @@ public:
       return reg;
   }
   bool isArray(){
-      if(origin == nullptr)
-          return false;
-      else{
-          if(origin->getType() == Operand::VARIABLE)
-              return false;
-          else{
-              return false;
-          }
-      }
+    if(type == Operand::ARRAY_ADRESS || type == Operand::ARRAY_FIRST_ELEMENT)
+        return true;
+    else
+        return false;
   }
 
 private:
-    VariableOP *origin; //临时变量该值为空
     int addr; //the offset from bp;对于数组来说，这个相对地址存放的是指针
     int reg;    //有的变量可能放在寄存器里，比如参数，其余变量也可能在溢出前放在寄存器中，溢出后该值为0
-    int absAddr;    //只有数组变量有这个值，把数组都放在数据区，所以用绝对地址
+    string name;
+    Operand::OPType type;
+    int size;
+    int baseSize;
 };
 
 class VariableList{
@@ -208,6 +209,8 @@ class Assembly
     void setCond(string relop, int reg1, int reg2, int dst);
 
     void setCondsubFunc(string relopAsm, int reg1, int reg2, int dst);
+
+    void createSpace(Operand *var, int &bp_offset);
 
     static string turnIntToStr(int val);
 
