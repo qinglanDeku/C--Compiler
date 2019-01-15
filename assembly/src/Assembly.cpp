@@ -239,7 +239,10 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
                 p++;
             }
         }
-        /*给变量分配空间的工作可以留在翻译中间代码的部分，遇到一个就开辟一个*/
+        //给变量分配空间：
+        while(p != IRCodeList.end() && (*p)->getType() != InterCode::FUNC){
+
+        }
 
     }
     else if((*it)->getType() == InterCode::ARG){//遇到ARG表示要开始传递函数，但是也要单独考虑没有参数的函数
@@ -263,7 +266,7 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
         list<InterCode *>::iterator p(it);
         int num_of_arg(0);
         while ((*p)->getType() != InterCode::CALL){ //遇到call表示传递参数完毕
-            if((*p)->getType() == InterCode::ARG){  //由于参数是算一个传一个，所以中间可能有其他类型的代码
+            if((*p)->getType() == InterCode::ARG){  
                 num_of_arg += 1;
                 if(num_of_arg <= 4){
                     Register* reg_being_used(Mips32.getReg(3 + num_of_arg));
@@ -273,33 +276,411 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
 
                         ConstantOP *const_OP_ptr = getConstOPptr((*p)->getOperand(1));
                         reg_being_used->setValue(const_OP_ptr->getIntVal());
+                        newCode = new AsmCode("li ");
+                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 3 + num_of_arg, -1));
+                        newCode->addOperand(AsmOperand(AsmOperand::IMMEDIATE, const_OP_ptr->getIntVal(), -1));
+                        addAsmCode(*newCode);
+                        delete newCode;
+                        newCode = nullptr;
                         //这里使用专用参数寄存器所以只考虑设置值
                     }
-                    //传递的参数不是常数,那么可能是临时变量(数组的元素！)或者局部变量
-                    else if((*p)->getOperand(1)->getType() == Operand::TEMP_VARIABLE){
-                        
-                    }
                     else{
+                        Operand *OP_ptr = (*p)->getOperand(1);
+                        if (!asmVarList.ifVarInList(OP_ptr->getName()))
+                        {   //如果没有为变量开辟空间，
+                            //也就是这个变量(非数组,数组变量一定有空间)没有初始化就被使用，那么就把它的值当成0处理。
+                            newCode = new AsmCode("move ");
+                            newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 3 + num_of_arg, -1));
+                            newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 0, -1));
+                            addAsmCode(*newCode);
+                            delete newCode;
+                            newCode = nullptr;
+                        }
+                        else{
+                            //如果为变量开辟了空间，那么就检查是否有寄存器保存有该变量的值，没有的话就从内存搬运，有的话从寄存器直接拿出
+                            if(asmVarList.getVar(OP_ptr->getName()).getReg() ==0 ){
+                                Register &alloc_new_reg(Mips32.allocateReg(*this));
+                                alloc_new_reg.setState(true);
+                                alloc_new_reg.setVar(asmVarList.getVar(OP_ptr->getName()));
+                                asmVarList.getVar(OP_ptr->getName()).setReg(Mips32.getRegNumber(alloc_new_reg));
+                                moveFromMemtoReg(Mips32.getRegNumber(alloc_new_reg), asmVarList.getVar(OP_ptr->getName()).getAddr(), 30);
+                                moveFromRegtoReg(3 + num_of_arg, Mips32.getRegNumber(alloc_new_reg));
+                            }
+                            else{
+                                moveFromRegtoReg(3 + num_of_arg, asmVarList.getVar(OP_ptr->getName()).getReg());
+                            }
+                        }
+                    }
+                    //传递的参数不是常数,那么可能是临时变量(数组的元素！)
+                    /* else if((*p)->getOperand(1)->getType() == Operand::TEMP_VARIABLE){
+                        TemporaryOP *temp_OP_ptr = getTempOPptr((*p)->getOperand(1));
+                        Register *reg_owe_temp = Mips32.getRegViaVarName(temp_OP_ptr->getName());
+                        if(reg_owe_temp == nullptr){
+                            std::cerr << "wrong with handle temporary" << endl;
+                            exit(-1);
+                        }
+                        newCode = new AsmCode("move ");
+                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 3 + num_of_arg, -1));
+                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, Mips32.getRegNumber(*reg_owe_temp), -1));
+                        addAsmCode(*newCode);
+                        delete newCode;
+                        newCode = nullptr;
+                    }
+                    else{//或者局部变量
                         VariableOP *var_OP_ptr = getVariaOPptr((*p)->getOperand(1));
-                        if (asmVarList.ifVarInList(var_OP_ptr->getName()))/*已经为变量开辟空间*/
+                        if(!asmVarList.ifVarInList(var_OP_ptr->getName())){//如果没有为变量开辟空间，
+                        //也就是这个变量(非数组,数组变量一定有空间)没有初始化就被使用，那么就把它的值当成0处理。
+                            newCode = new AsmCode("move ");
+                            newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 3 + num_of_arg, -1));
+                            newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 0, -1));
+                            addAsmCode(*newCode);
+                            delete newCode;
+                            newCode = nullptr;
+                        }
+                        else//已经为变量开辟空间
                         {   
                             if(asmVarList.getVar(var_OP_ptr->getName()).getReg() == 0){
-                                /*如果变量已经被溢出*/
+                                //如果变量已经被溢出，或者不是保存在寄存器里的变量，能被溢出的一定是存放在栈中的数据，存放在a0-a3的数据已经被提前保存好了;
                                 if(var_OP_ptr->getType() == Operand::VARIABLE){//非数组变量
-                                    newCode = new AsmCode("lw ");
-                                    newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 3 + num_of_arg, -1));
-                                    newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, asmVarList.getVar(var_OP_ptr->getName()).getAddr(), 30));
-
+                                    if(asmVarList.getVar(var_OP_ptr->getName()).getAddr() != 0){//传递的参数在栈中而不是寄存器(调用者参数作为参数传递)
+                                        newCode = new AsmCode("lw ");
+                                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 3 + num_of_arg, -1));
+                                        newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, asmVarList.getVar(var_OP_ptr->getName()).getAddr(), 30));
+                                    }
+                                    else{//传递的参数在寄存器中（把调用者的参数传入）,这一段多余？
+                                        newCode = new AsmCode("move ");
+                                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 3 + num_of_arg, -1));
+                                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, asmVarList.getVar(var_OP_ptr->getName()).getReg(), -1));
+                                    }
+                                    addAsmCode(*newCode);
+                                    delete newCode;
+                                    newCode = nullptr;
                                 }
+                                else{//数组变量传递地址
+                                    if(asmVarList.getVar(var_OP_ptr->getName()).getAddr() != 0){
+                                        newCode = new AsmCode("lw ");
+                                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 3 + num_of_arg, -1));
+                                        newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, asmVarList.getVar(var_OP_ptr->getName()).getAddr(), 30));
+                                        addAsmCode(*newCode);
+                                        delete newCode;
+                                        newCode = nullptr;
+                                    }
+                                    else{
+                                        ///不可能出现这个情况...存在寄存器里的值会在另外一个分支处理
+                                    }
+                                }
+                            }
+                            else{//如果变量没有溢出，或者本来就是存放在寄存器中变量
+                                //Register *reg_owe_var = Mips32.getReg(asmVarList.getVar(var_OP_ptr->getName()).getReg());
+                                newCode = new AsmCode("move ");
+                                newCode->addOperand(AsmOperand(AsmOperand::REGISTER, num_of_arg + 3, -1));
+                                newCode->addOperand(AsmOperand(AsmOperand::REGISTER, asmVarList.getVar(var_OP_ptr->getName()).getReg(), -1));
+                                addAsmCode(*newCode);
+                                delete newCode;
+                                newCode = nullptr;
+                            }
+                        }
+                    }*/
+                }
+                else{//参数数量多于四个
+                    /*if((*p)->getOperand(1)->getType()==Operand::ICONSTANT){
+                        //如果传递的参数是常数，那么直接将其写入栈中。
+                        subSp(4);
+                        Register &r = Mips32.allocateReg(*this);
+                        ConstantOP *const_OP_ptr = getConstOPptr((*p)->getOperand(1));
+                        //reg_being_used->setValue(const_OP_ptr->getIntVal());
+                        newCode = new AsmCode("li ");
+                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 25, -1));
+                        newCode->addOperand(AsmOperand(AsmOperand::IMMEDIATE, const_OP_ptr->getIntVal(), -1));
+                        addAsmCode(*newCode);
+                        delete newCode;
+                        newCode = new AsmCode("sw ");
+                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 25, -1));
+                        newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, 0, 29));
+                        addAsmCode(*newCode);
+                        delete newCode;
+                        newCode = nullptr;
+                        //这里使用专用参数寄存器所以只考虑设置值
+                    }
+                    //传递的参数不是常数,那么可能是临时变量(数组的元素！)
+                    else if((*p)->getOperand(1)->getType() == Operand::TEMP_VARIABLE){
+                        subSp(4);
+                        TemporaryOP *temp_OP_ptr = getTempOPptr((*p)->getOperand(1));
+                        Register *reg_owe_temp = Mips32.getRegViaVarName(temp_OP_ptr->getName());
+                        if(reg_owe_temp == nullptr){
+                            std::cerr << "wrong with handle temporary" << endl;
+                            exit(-1);
+                        }
+                        newCode = new AsmCode("sw ");
+                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, Mips32.getRegNumber(*reg_owe_temp), -1));
+                        newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, 0, 29));
+                        addAsmCode(*newCode);
+                        delete newCode;
+                        newCode = nullptr;
+                    }
+                    else{//或者局部变量
+                        VariableOP *var_OP_ptr = getVariaOPptr((*p)->getOperand(1));
+                        subSp(4);
+                        if (!asmVarList.ifVarInList(var_OP_ptr->getName()))
+                        {   //如果没有为变量开辟空间，
+                            //也就是这个变量(非数组,数组变量一定有空间)没有初始化就被使用，那么就把它的值当成0处理。
+                            newCode = new AsmCode("sw ");
+                            newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 0, -1));
+                            newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, 0, 29));
+                            addAsmCode(*newCode);
+                            delete newCode;
+                            newCode = nullptr;
+                        }
+                        else//已经为变量开辟空间
+                        {   
+                            if(asmVarList.getVar(var_OP_ptr->getName()).getReg() == 0){
+                                /*如果变量已经被溢出，或者不是保存在寄存器里的变量，能被溢出的一定是存放在栈中的数据，存放在a0-a3的数据已经被提前保存好了
+                                if(var_OP_ptr->getType() == Operand::VARIABLE){//非数组变量
+                                    if(asmVarList.getVar(var_OP_ptr->getName()).getAddr() != 0){//传递的参数在栈中而不是寄存器(调用者参数作为参数传递)
+                                        newCode = new AsmCode("lw ");
+                                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 25, -1));
+                                        newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, asmVarList.getVar(var_OP_ptr->getName()).getAddr(), 30));
+                                        addAsmCode(*newCode);
+                                        delete newCode;
+                                        newCode = new AsmCode("sw ");
+                                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 25, -1));
+                                        newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, 0, 29));
+                                        addAsmCode(*newCode);
+                                        delete newCode;
+                                        newCode = nullptr;
+                                    }
+                                    /*else{//传递的参数在寄存器中（把调用者的参数传入）,这一段多余？
+                                        newCode = new AsmCode("move ");
+                                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 3 + num_of_arg, -1));
+                                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, asmVarList.getVar(var_OP_ptr->getName()).getReg(), -1));
+                                    }
+                                }
+                                else{//数组变量传递地址
+                                    if(asmVarList.getVar(var_OP_ptr->getName()).getAddr() != 0){
+                                        newCode = new AsmCode("lw ");
+                                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 25, -1));
+                                        newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, asmVarList.getVar(var_OP_ptr->getName()).getAddr(), 30));
+                                        addAsmCode(*newCode);
+                                        delete newCode;
+                                        newCode = new AsmCode("sw ");
+                                        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 25, -1));
+                                        newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, 0, 29));
+                                        addAsmCode(*newCode);
+                                        delete newCode;
+                                        newCode = nullptr;
+                                    }
+                                    else{
+                                        /*不可能出现这个情况...存在寄存器里的值会在另外一个分支处理
+                                    }
+                                }
+                            }
+                            else{//如果变量没有溢出，或者本来就是存放在寄存器中变量
+                                //Register *reg_owe_var = Mips32.getReg(asmVarList.getVar(var_OP_ptr->getName()).getReg());
+                                newCode = new AsmCode("sw ");
+                                newCode->addOperand(AsmOperand(AsmOperand::REGISTER, asmVarList.getVar(var_OP_ptr->getName()).getReg(), -1));
+                                newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, 0, 29));
+                                addAsmCode(*newCode);
+                                delete newCode;
+                                newCode = nullptr;
+                            }
+                        }
+                    }*/
+                    if((*p)->getOperand(1)->getType()==Operand::ICONSTANT){
+                        //如果传递的参数是常数，那么直接将其写入。
+
+                        ConstantOP *const_OP_ptr = getConstOPptr((*p)->getOperand(1));
+                        loadConsttoReg(const_OP_ptr->getIntVal(), 25);
+                        subSp(4);
+                        moveFromRegtoMem(29, 0, 25);
+                    }
+                    else{
+                        Operand *OP_ptr = (*p)->getOperand(1);
+                        if (!asmVarList.ifVarInList(OP_ptr->getName()))
+                        {   //如果没有为变量开辟空间，
+                            //也就是这个变量(非数组,数组变量一定有空间)没有初始化就被使用，那么就把它的值当成0处理。
+                            subSp(4);
+                            moveFromRegtoMem(29, 0, 0);
+                        }
+                        else{
+                            //如果为变量开辟了空间，那么就检查是否有寄存器保存有该变量的值，没有的话就从内存搬运，有的话从寄存器直接拿出
+                            if(asmVarList.getVar(OP_ptr->getName()).getReg() ==0 ){
+                                subSp(4);
+                                Register &alloc_new_reg(Mips32.allocateReg(*this));
+                                alloc_new_reg.setState(true);
+                                alloc_new_reg.setVar(asmVarList.getVar(OP_ptr->getName()));
+                                asmVarList.getVar(OP_ptr->getName()).setReg(Mips32.getRegNumber(alloc_new_reg));
+                                moveFromMemtoReg(Mips32.getRegNumber(alloc_new_reg), asmVarList.getVar(OP_ptr->getName()).getAddr(), 30);
+                                moveFromRegtoMem(29, 0, Mips32.getRegNumber(alloc_new_reg));
+                            }
+                            else{
+                                subSp(4);
+                                moveFromRegtoMem(29, 0,  asmVarList.getVar(OP_ptr->getName()).getReg());
                             }
                         }
                     }
                 }
             }
+            else{
+                std::cerr << "error : some sentences are between ARG" << endl;
+                exit(-1);
+            }
             p++;
+            retval++;
         }
+        retval += translateOneLine(p, offset);//这一行一定是call指令
 
-        spillReg();//寄存器溢出
+        //把a0 和 a3的值存回寄存器
+        //先把开辟给参数的栈收回，然后再收回a0-a3的空间
+        if(num_of_arg > 4){
+            newCode = new AsmCode("addi ");
+            newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 29, -1));
+            newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 29, -1));
+            newCode->addOperand(AsmOperand(AsmOperand::IMMEDIATE, (num_of_arg - 4)* 4, -1));
+            addAsmCode(*newCode);
+            delete newCode;
+            newCode = nullptr;
+        }
+        for (int i(0); i < 4;i++){
+            newCode = new AsmCode("lw ");
+            newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 4 + i,-1));
+            newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, -4 * i, 29));
+            AssemblyCodeList.push_back(*newCode);
+            delete newCode;
+            newCode = nullptr;
+        }
+        addSp(16);
+    }
+
+    else if((*it)->getType() == InterCode::CALL){
+        //执行的流程大致为：先保存ra的的值->准备跳转->回来后把ra的值放回去,把放回值存放好；
+        //其中返回值可能值直接返回到一个变量，也可能返回到一个数组的元素，也可能就是个空变量
+        saveRa();
+        InterCode *IC_ptr = (*it);
+        CallCode *CC_ptr = (CallCode*)IC_ptr;
+        Jump(CC_ptr->getFuncName(), "jal");
+        retRa();
+        Operand *ret_var = CC_ptr->getOperand(1);
+        if(asmVarList.getVar(ret_var->getName()).getReg() == 0){
+            Register &alloc_reg = Mips32.allocateReg(*this);
+            alloc_reg.setVar(asmVarList.getVar(ret_var->getName()));
+            asmVarList.getVar(ret_var->getName()).setReg(Mips32.getRegNumber(alloc_reg));
+            moveFromRegtoReg(asmVarList.getVar(ret_var->getName()).getReg(), 2);
+        }
+        else{
+            moveFromRegtoReg(asmVarList.getVar(ret_var->getName()).getReg(), 2);
+        }
+    }
+    else if((*it)->getType() == InterCode::RETURN){
+        //保存返回值也是，先看返回值的类型，从而决定如何获取返回值,在跳转前，记得调整栈帧
+        Operand *X = (*it)->getOperand(1);
+        if(X->getType() == Operand::ICONSTANT){
+            ConstantOP *const_ptr = (ConstantOP *)X;
+            loadConsttoReg(const_ptr->getIntVal(), 2);
+        }
+        else{
+            if(!asmVarList.ifVarInList(X->getName())){
+                moveFromRegtoReg(2, 0);
+            }
+            else{
+                if(asmVarList.getVar(X->getName()).getReg() == 0){
+                    moveFromMemtoReg(2, asmVarList.getVar(X->getName()).getAddr(), 30);
+                }
+                else{
+                    moveFromRegtoReg(2, asmVarList.getVar(X->getName()).getReg());
+                }
+            }
+        }
+        moveFromRegtoReg(29, 30);
+        moveFromMemtoReg(30, 0, 29);
+        Jump("$ra", "jr");
+    }
+
+    else if((*it)->getType() == InterCode::LABEL){
+        InterCode *IC_ptr = (*it);
+        LabelCode *LBLC_ptr = (LabelCode *)IC_ptr;
+        setLabel(LBLC_ptr->getLabelNo());
+    }
+
+    else if((*it)->getType() == InterCode::GOTO){
+        InterCode *IC_ptr = (*it);
+        GotoCode *GT_ptr = (GotoCode *)IC_ptr;
+        Jump(turnIntToStr(GT_ptr->getDst()), "j");
+    }
+
+    else if((*it)->getType() == InterCode::COND){
+        InterCode *IC_ptr = (*it);
+        CondCode *Cond_ptr = (CondCode *)IC_ptr;
+        Operand *op1 = Cond_ptr->getOp1();
+        Operand *op2 = Cond_ptr->getOp2();
+        int reg1(0), reg2(0);
+        if (op1->getType() == Operand::ICONSTANT)
+        {
+            ConstantOP *const_ptr = (ConstantOP *)op1;
+            loadConsttoReg(const_ptr->getIntVal(), 24);
+            reg1 = 24;
+        }
+        else{
+            if(!asmVarList.ifVarInList(op1->getName())){
+                reg1 = 0;
+            }
+            else{
+                if(asmVarList.getVar(op1->getName()).getReg() == 0){
+                    Register &r = Mips32.allocateReg(*this);
+                    r.setVar(asmVarList.getVar(op1->getName()));
+                    asmVarList.getVar(op1->getName()).setReg(Mips32.getRegNumber(r));
+                }
+                reg1 = asmVarList.getVar(op1->getName()).getReg();
+            }
+        }
+        if (op2->getType() == Operand::ICONSTANT)
+        {
+            ConstantOP *const_ptr = (ConstantOP *)op2;
+            loadConsttoReg(const_ptr->getIntVal(), 25);
+            reg2 = 25;
+        }
+        else{
+            if(!asmVarList.ifVarInList(op2->getName())){
+                reg2 = 0;
+            }
+            else{
+                if(asmVarList.getVar(op2->getName()).getReg() == 0){
+                    Register &r = Mips32.allocateReg(*this);
+                    r.setVar(asmVarList.getVar(op2->getName()));
+                    asmVarList.getVar(op2->getName()).setReg(Mips32.getRegNumber(r));
+                }
+                reg2 = asmVarList.getVar(op2->getName()).getReg();
+            }
+        }
+        setCond(Cond_ptr->getRelop(), reg1, reg2, Cond_ptr->getDst());
+    }
+    else if((*it)->getType() == InterCode::DEC){
+
+    }
+    else if((*it)->getType() == InterCode::PARAM){
+        errorRoutine("error when translateoneLine: undefined PARAM");
+    }
+
+    else if((*it)->getType() == InterCode::READ){
+        InterCode *IC_ptr = (*it);
+        ReadCode *rd_ptr = (ReadCode *)IC_ptr;
+        Operand *X = rd_ptr->getOperand(1);
+        Register &r = Mips32.allocateReg(*this);
+        r.setVar(asmVarList.getVar(X->getName()));
+        asmVarList.getVar(X->getName()).setReg(Mips32.getRegNumber(r));
+        saveRa();
+        Jump("read", "jal");
+        retRa();
+        moveFromRegtoReg(asmVarList.getVar(X->getName()).getReg(), 2);
+    }
+
+    else if((*it)->getType() == InterCode::WRITE){
+        saveRa();
+        Jump("write", "jal");
+        retRa();
+    }
+
+    else if((*it)->getType() == InterCode::ASSIGN){
+
     }
 
     return retval;
@@ -325,4 +706,135 @@ int Assembly::translateParam(list<InterCode *>::iterator it, int offset){
     }
     return retval;*/
     return 1;
+}
+
+void Assembly::moveFromMemtoReg(int regNo, int addr){
+    AsmCode *code0 = new AsmCode("lw ");
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, regNo, -1));
+    code0->addOperand(AsmOperand(AsmOperand::ADDRESS, addr, 30));
+    addAsmCode(*code0);
+    clearDynamicVar(code0);
+}
+
+void Assembly::moveFromMemtoReg(int dst_regNo, int addr, int src_regNo){
+    AsmCode *code0 = new AsmCode("lw ");
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, dst_regNo, -1));
+    code0->addOperand(AsmOperand(AsmOperand::ADDRESS, addr, src_regNo));
+    addAsmCode(*code0);
+    clearDynamicVar(code0);
+}
+
+void Assembly::moveFromRegtoMem(int regNo, int addr){
+    AsmCode *code0 = new AsmCode("sw ");
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, regNo, -1));
+    code0->addOperand(AsmOperand(AsmOperand::ADDRESS, addr, 30));
+    addAsmCode(*code0);
+    clearDynamicVar(code0);
+}
+
+void Assembly::moveFromRegtoMem(int dst_regNo, int addr, int src_regNo){
+    AsmCode *code0 = new AsmCode("sw ");
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, src_regNo, -1));
+    code0->addOperand(AsmOperand(AsmOperand::ADDRESS, addr, dst_regNo));
+    addAsmCode(*code0);
+    clearDynamicVar(code0);
+}
+
+void Assembly::moveFromRegtoReg(int dst_regNo, int src_regNo){
+    if(dst_regNo == 0)
+    {
+        std::cerr << "error: move to $zero from other reg" << endl;
+        exit(-1);
+    }
+    AsmCode *code0 = new AsmCode("move ");
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, dst_regNo, -1));
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, src_regNo, -1));
+    addAsmCode(*code0);
+    clearDynamicVar(code0);
+}
+
+void Assembly::loadConsttoReg(int constVar, int regNo){
+    AsmCode *code0(new AsmCode("li "));
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, regNo, -1));
+    code0->addOperand(AsmOperand(AsmOperand::IMMEDIATE, constVar, -1));
+    addAsmCode(*code0);
+    clearDynamicVar(code0);
+}
+
+
+void Assembly::Jump(string labelName, string jmpType){
+    string jmp_instr(jmpType);
+    jmp_instr.append(" ");
+    jmp_instr.append(labelName);
+    AsmCode *code0(new AsmCode(jmp_instr));
+    addAsmCode(*code0);
+    clearDynamicVar(code0);
+}
+
+void Assembly::setLabel(int labelNo){
+    stringstream ss;
+    string strLabel;
+    ss << labelNo;
+    ss >> strLabel;
+    strLabel.append(":");
+    AsmCode *code0 = new AsmCode(strLabel);
+    addAsmCode(*code0);
+    clearDynamicVar(code0);
+}
+
+void Assembly::setCond(string relop, int reg1, int reg2, int dst){
+    if(relop == "=="){
+        setCondsubFunc("beq ", reg1, reg2, dst);
+    }
+    else if(relop == "!="){
+        setCondsubFunc("bne ", reg1, reg2, dst);
+    }
+    else if(relop == ">"){
+        setCondsubFunc("bgt ", reg1, reg2, dst);
+    }
+    else if(relop == "<"){
+        setCondsubFunc("blt ", reg1, reg2, dst);
+    }
+    else if(relop == ">="){
+        setCondsubFunc("bge ", reg1, reg2, dst);
+    }
+    else if(relop == "<="){
+        setCondsubFunc("ble ", reg1, reg2, dst);
+    }
+    else {
+        std::cerr << "wrong when handle cond: wrong relop type"<<endl;
+        exit(-1);
+    }
+}
+
+void Assembly::setCondsubFunc(string relopAsm, int reg1, int reg2, int dst){
+    AsmCode *code0 = new AsmCode(relopAsm);
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, reg1, -1));
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, reg2, -1));
+    code0->addOperand(AsmOperand(AsmOperand::IMMEDIATE, dst, -1));
+    addAsmCode(*code0);
+    clearDynamicVar(code0);
+}
+
+string Assembly::turnIntToStr(int val){
+    stringstream ss;
+    string retval;
+    ss << val;
+    ss >> retval;
+    return retval;
+}
+
+
+int Assembly::turnStrToInt(string str){
+    int ret;
+    stringstream ss;
+    ss << str;
+    ss >> ret;
+    return ret;
+}
+
+
+void Assembly::errorRoutine(string errorInfo){
+    std::cerr << errorInfo << endl;
+    exit(-1);
 }

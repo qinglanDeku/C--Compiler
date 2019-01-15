@@ -28,20 +28,40 @@ public:
       reg = newval;
       return reg;
   }
-
+  bool isArray(){
+      if(origin == nullptr)
+          return false;
+      else{
+          if(origin->getType() == Operand::VARIABLE)
+              return false;
+          else{
+              return false;
+          }
+      }
+  }
 
 private:
-    VariableOP *origin;
-    int addr; //the offset from bp;
+    VariableOP *origin; //临时变量该值为空
+    int addr; //the offset from bp;对于数组来说，这个相对地址存放的是指针
     int reg;    //有的变量可能放在寄存器里，比如参数，其余变量也可能在溢出前放在寄存器中，溢出后该值为0
-    
+    int absAddr;    //只有数组变量有这个值，把数组都放在数据区，所以用绝对地址
 };
 
 class VariableList{
 public:
-    VariableList();
-    ~VariableList();
-    void addVar(Variable &newVar) { VarList.push_back(newVar); }
+  VariableList();
+  ~VariableList();
+  void addVar(Variable &newVar) { VarList.push_back(newVar); }
+  void setVarReg(const string &varName, int regNumber)
+  {
+      for (int i(0); i < VarList.size(); i++)
+      {
+          if (VarList[i].getName() == varName)
+          {
+              VarList[i].setReg(regNumber);
+          }
+      }
+    }
     bool ifVarInList(Variable var){
         for(int i(0); i< VarList.size(); i++){
             if(VarList[i].getName() == var.getName())
@@ -114,7 +134,7 @@ class Assembly
     void produceAssembly();
     void printAssembly();
     void outputAssembly(const string &filename);
-    void spillReg();
+    void spillReg() { Mips32.spillAllReg(*this); }
     //下面这个函数用于添加汇编代码代代码表
     void addAsmCode(const AsmCode &newCode) { AssemblyCodeList.push_back(newCode); } 
     /*下面两个函数用于指针强制转化*/
@@ -131,13 +151,75 @@ class Assembly
         TemporaryOP *retval = (TemporaryOP *)OP_ptr;
         return retval;
     }
+    VariableList asmVarList;
+    static void clearDynamicVar(void* p){
+        delete p;
+        p = nullptr;
+    }
+    void subSp(int subVal){
+        AsmCode code0("addi ");
+        code0.addOperand(AsmOperand(AsmOperand::REGISTER, 29, -1));
+        code0.addOperand(AsmOperand(AsmOperand::REGISTER, 29, -1));
+        code0.addOperand(AsmOperand(AsmOperand::IMMEDIATE, -subVal, -1));
+        addAsmCode(code0);
+    }
+    void addSp(int addVal){
+        AsmCode code0("addi ");
+        code0.addOperand(AsmOperand(AsmOperand::REGISTER, 29, -1));
+        code0.addOperand(AsmOperand(AsmOperand::REGISTER, 29, -1));
+        code0.addOperand(AsmOperand(AsmOperand::IMMEDIATE, addVal, -1));
+        addAsmCode(code0);
+    }
+    void saveRa(){
+        subSp(4);
+        AsmCode *code = new AsmCode("sw ");
+        code->addOperand(AsmOperand(AsmOperand::REGISTER, 31, -1));
+        code->addOperand(AsmOperand(AsmOperand::ADDRESS, 0, 29));
+        addAsmCode(*code);
+        clearDynamicVar(code);
+    }
+
+    void retRa(){
+        AsmCode *code = new AsmCode("lw ");
+        code->addOperand(AsmOperand(AsmOperand::REGISTER, 31, -1));
+        code->addOperand(AsmOperand(AsmOperand::ADDRESS, 0, 29));
+        addAsmCode(*code);
+        clearDynamicVar(code);
+        addSp(4);
+    }
+
+//这3个move都是针对相对地址（也就是从相对帧指针的位置搬出）
+    void moveFromMemtoReg(int regNo, int addr);
+
+    void moveFromMemtoReg(int dst_regNo, int addr, int src_regNo);  //地址的表示形式为 addr($dst_regNo)
+
+    void moveFromRegtoMem(int regNo, int addr);
+
+    void moveFromRegtoMem(int dst_regNo, int addr, int src_regNo);
+
+    void moveFromRegtoReg(int dst_regNo, int src_regNo);
+
+    void loadConsttoReg(int constVar, int retNo);
+
+    void Jump(string labelName, string jmpType);
+
+    void setLabel(int labelNo);
+
+    void setCond(string relop, int reg1, int reg2, int dst);
+
+    void setCondsubFunc(string relopAsm, int reg1, int reg2, int dst);
+
+    static string turnIntToStr(int val);
+
+    static int turnStrToInt(string str);
+
+    static void errorRoutine(string errorInfo);
 
   private:
     list<InterCode *> IRCodeList;
     list<VariableOP *> variableList;
     BlockList blockList;
     MipsRegisterList Mips32;
-    VariableList asmVarList;
     vector<AsmCode> AssemblyCodeList;
     void translateOneBlock(const BasicBlock &BB);
     int translateOneLine(list<InterCode *>::iterator it, int &offset); //这里的offset是函数体内局部变量的存储地址在栈中的偏移量

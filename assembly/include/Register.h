@@ -55,8 +55,8 @@ class Register
 
     AsmVarType getAsmType() { return asmType; }
   private:
-    bool state;           //0 means spare, 1 means occupied;
     string name;          //  name of register
+    bool state;           //0 means spare, 1 means occupied;
     int address; // address of the value which is a variable in reg;
     string variableName;  // name of variable stored
     int value;            // value of variable stroed; if  variable is a array, then the value may be void
@@ -69,7 +69,8 @@ public:
   ~MipsRegisterList();
   Register *getReg(int i);
   Register *getReg(const string &name);
-  Register& allocateReg(Assembly& assembly_process);
+  Register *getRegViaVarName(const string &VarName);
+  Register &allocateReg(Assembly &assembly_process);
   void retractReg(int i, Assembly &asm_process);
   void retractReg(const string &name, Assembly &asm_process);
   int getRegNumber(const Register& reg){       //通过寄存器的名字得到其编号
@@ -80,7 +81,7 @@ public:
       return 0;
   }
   void spillOneReg(Register &r, Assembly &Asm_process);     //溢出单个寄存器
-
+  void spillAllReg(Assembly &Asm_process);
   static string Mips32Regs[32];
 
 private:

@@ -395,7 +395,7 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
                 delete funcName;
                 
             }
-            else{//have args   //如果把参数一起传递的话会出现寄存器分配问题：当参数过多时，没有地方放置中间代码的临时变量
+            else{//have args
                 SyntaxTreeNode *fstNode(GetChild(expNode,1));
                 string *funcName( new string(fstNode->NodeUnit.LU.IDname));
                 funItem *function(analyzeResult->FunctionTab.FindItem(*funcName));
@@ -415,7 +415,7 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
                     }
                 }
                 else{
-                    /*vector<ArgCode *> templist;
+                    vector<ArgCode *> templist;
                     for (int i(0); i < arglist->size(); i++)
                     {
                         if((*arglist)[i]->getType() == Operand::TEMP_ARRAY_ADRESS){
@@ -423,20 +423,17 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
                             AssignCode *code0(new AssignCode(InterCode::ASSIGNFROMLOC, t1, (*arglist)[i]));
                             ArgCode *code1(new ArgCode(InterCode::ARG, t1));
                             this->IRCodeList.push_back(code0);
-                            this->IRCodeList.push_back(code1);
-                            
-                            //templist.push_back(code1);
+                            templist.push_back(code1);
                         }
                         else{
                             ArgCode *code0(new ArgCode(InterCode::ARG, (*arglist)[i]));
-                            this->IRCodeList.push_back(code0);
-                            //templist.push_back(code0);
+                            templist.push_back(code0);
                             code0 = NULL;
                         }
-                    }*/
-                   /* for (int i(0); i < templist.size(); i++){
+                    }
+                    for (int i(0); i < templist.size(); i++){
                         IRCodeList.push_back(templist[i]);
-                    }*/
+                    }
                     CallCode *code1(new CallCode(InterCode::CALL, place, *funcName));
                     this->IRCodeList.push_back(code1);
                 }
@@ -516,41 +513,11 @@ void Translate::translateArg(SyntaxTreeNode* argsNode, Analyze* analyzeResult, v
     if(ChildNumber(argsNode) == 1){
         TemporaryOP *t1(new TemporaryOP(Operand::TEMP_VARIABLE, newTemp()));
         translateExp(GetChild(argsNode, 1), analyzeResult, t1);
-        if(t1->getType() == Operand::TEMP_ARRAY_ADRESS){
-            TemporaryOP *t11(new TemporaryOP(Operand::TEMP_VARIABLE, newTemp()));
-            AssignCode *code0(new AssignCode(InterCode::ASSIGNFROMLOC, t11, t1));
-            ArgCode *code1(new ArgCode(InterCode::ARG, t11));
-            this->IRCodeList.push_back(code0);
-            this->IRCodeList.push_back(code1);
-            
-            //templist.push_back(code1);
-        }
-        else{
-            ArgCode *code0(new ArgCode(InterCode::ARG, t1));
-            this->IRCodeList.push_back(code0);
-            //templist.push_back(code0);
-            code0 = NULL;
-        }
         arg_list->push_back(t1);
     }
     else{
         TemporaryOP *t1(new TemporaryOP(Operand::TEMP_VARIABLE, newTemp()));
         translateExp(GetChild(argsNode, 1), analyzeResult, t1);
-                if(t1->getType() == Operand::TEMP_ARRAY_ADRESS){
-            TemporaryOP *t11(new TemporaryOP(Operand::TEMP_VARIABLE, newTemp()));
-            AssignCode *code0(new AssignCode(InterCode::ASSIGNFROMLOC, t11, t1));
-            ArgCode *code1(new ArgCode(InterCode::ARG, t11));
-            this->IRCodeList.push_back(code0);
-            this->IRCodeList.push_back(code1);
-            
-            //templist.push_back(code1);
-        }
-        else{
-            ArgCode *code0(new ArgCode(InterCode::ARG, t1));
-            this->IRCodeList.push_back(code0);
-            //templist.push_back(code0);
-            code0 = NULL;
-        }
         arg_list->push_back(t1);
         translateArg(GetChild(argsNode, 3), analyzeResult, arg_list);
     }
@@ -860,7 +827,7 @@ void Translate::printCodeList(){
     list<InterCode *>::iterator it(IRCodeList.begin());
     while (it != IRCodeList.end())
     {
-        cout << (*it)->getCode() << endl;
+        cout << (*it)->getCode() << " ;  "<<(*it)->getType() << endl;
         it++;
     }
 }

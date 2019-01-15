@@ -70,3 +70,6 @@
 			
 		
 			
+
+			什么变量需要在第一遍遍历的时候加入变量表并分配地址：
+			ASSIGN， ASSIGNFROMLOC， ASSIGNLOC， PLUS， MUL， SUB， DIV，DEC， READ
