@@ -218,6 +218,7 @@ class Assembly
   private:
     list<InterCode *> IRCodeList;
     list<VariableOP *> variableList;
+    static string AsmHead[22];
     BlockList blockList;
     MipsRegisterList Mips32;
     vector<AsmCode> AssemblyCodeList;

@@ -108,6 +108,31 @@ IRCodeList(IRCodeList), variableList(variableList), blockList(IRCodeList), Mips3
 
 Assembly::~Assembly(){}
 
+string Assembly::AsmHead[22] = {
+    ".data", 
+    "_prompt: .asciiz \"Enter an integer:\"", 
+    "_ret: .asciiz \"\\n\"",
+    ".globl main",
+    ".text",
+    "read:",
+    "li $v0, 4",
+    "la $a0, _prompt",
+    "syscall",
+    "li $v0, 5",
+    "syscall",
+    "jr $ra"
+    "",
+    "write:",
+    "li $v0, 1",
+    "syscall",
+    "li $v0, 4",
+    "la $a0, _ret",
+    "syscall",
+    "move $v0, $0",
+    "jr $ra",
+    ""
+};
+
 void Assembly::printAssembly(){
     for (int i(0); i < AssemblyCodeList.size(); i++){
         cout << AssemblyCodeList[i].getStrAsmCode() << endl;
@@ -240,8 +265,36 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
             }
         }
         //给变量分配空间：
-        while(p != IRCodeList.end() && (*p)->getType() != InterCode::FUNC){
+        int bp_offset(0);
+        while (p != IRCodeList.end() && (*p)->getType() != InterCode::FUNC)
+        {
+            if((*p)->getType() == InterCode::ASSIGN){
 
+            }
+            else if((*p)->getType() == InterCode::ASSIGNFROMLOC){
+                
+            }
+            else if((*p)->getType() == InterCode::ASSIGNLOC){
+
+            }
+            else if((*p)->getType() == InterCode::PLUS){
+
+            }
+            else if((*p)->getType() == InterCode::MUL){
+
+            }
+            else if((*p)->getType() == InterCode::SUB){
+
+            }
+            else if((*p)->getType() == InterCode::DIV){
+
+            }
+            else if((*p)->getType() == InterCode::DEC){
+
+            }
+            else if((*p)->getType() == InterCode::READ){
+
+            }
         }
 
     }
@@ -682,6 +735,28 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
     else if((*it)->getType() == InterCode::ASSIGN){
 
     }
+    else if((*it)->getType() == InterCode::ASSIGNFROMLOC){
+        
+    }
+    else if((*it)->getType() == InterCode::ASSIGNLOC){
+
+    }
+    else if((*it)->getType() == InterCode::ASSIGNTOLOC){
+        
+    }
+    else if((*it)->getType() == InterCode::PLUS){
+
+    }
+    else if((*it)->getType() == InterCode::MUL){
+
+    }
+    else if((*it)->getType() == InterCode::SUB){
+
+    }
+    else if((*it)->getType() == InterCode::DIV){
+
+    }
+
 
     return retval;
 }
