@@ -242,15 +242,7 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
         /*给变量分配空间的工作可以留在翻译中间代码的部分，遇到一个就开辟一个*/
 
     }
-
-    else if((*it)->getType() == InterCode::ARG){
-        while((*it)->getType() == InterCode::ARG){
-            retval += 1;
-            it++;
-        }
-        /*栈帧的变化交给call来做*/
-    }
-    else if((*it)->getType() == InterCode::CALL){
+    else if((*it)->getType() == InterCode::ARG){//遇到ARG表示要开始传递函数，但是也要单独考虑没有参数的函数
         /*保存a0-a3*/
         AsmCode *newCode = new AsmCode("addi ");
         newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 29, -1));
@@ -266,35 +258,45 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
             delete newCode;
         }
         newCode = nullptr;
-        /*传递参数（如果有), 统计ARG*/
+
+        /*统计ARG ， 传递参数*/
         list<InterCode *>::iterator p(it);
-        p--;
         int num_of_arg(0);
-        while ((*p)->getType() == InterCode::ARG){
-            num_of_arg += 1;
-            if(num_of_arg <= 4){
-                if((*p)->getOperand(1)->getType()==Operand::ICONSTANT){
-                    //如果传递的参数是常数，那么直接将其写入寄存器。
+        while ((*p)->getType() != InterCode::CALL){ //遇到call表示传递参数完毕
+            if((*p)->getType() == InterCode::ARG){  //由于参数是算一个传一个，所以中间可能有其他类型的代码
+                num_of_arg += 1;
+                if(num_of_arg <= 4){
                     Register* reg_being_used(Mips32.getReg(3 + num_of_arg));
                     reg_being_used->setState(true);
-                    //Operand* OP_ptr = (*p)->getOperand(1);
-                    ConstantOP *const_OP_ptr = getConstOPptr((*p)->getOperand(1));
-                    reg_being_used->setValue(const_OP_ptr->getIntVal());
-                }
-                else{
-                    //Operand *OP_ptr = (*p)->getOperand(1);
-                    VariableOP *var_OP_ptr = getVariaOPptr((*p)->getOperand(1));
-                    if (asmVarList.ifVarInList(var_OP_ptr->getName()))/*已经为变量开辟空间*/
-                    {   
-                        if(asmVarList.getVar(var_OP_ptr->getName()).getReg() == 0){
-                            /*如果变量已经被溢出*/
-                            newCode = new AsmCode("lw ");
+                    if((*p)->getOperand(1)->getType()==Operand::ICONSTANT){
+                        //如果传递的参数是常数，那么直接将其写入寄存器。
 
+                        ConstantOP *const_OP_ptr = getConstOPptr((*p)->getOperand(1));
+                        reg_being_used->setValue(const_OP_ptr->getIntVal());
+                        //这里使用专用参数寄存器所以只考虑设置值
+                    }
+                    //传递的参数不是常数,那么可能是临时变量(数组的元素！)或者局部变量
+                    else if((*p)->getOperand(1)->getType() == Operand::TEMP_VARIABLE){
+                        
+                    }
+                    else{
+                        VariableOP *var_OP_ptr = getVariaOPptr((*p)->getOperand(1));
+                        if (asmVarList.ifVarInList(var_OP_ptr->getName()))/*已经为变量开辟空间*/
+                        {   
+                            if(asmVarList.getVar(var_OP_ptr->getName()).getReg() == 0){
+                                /*如果变量已经被溢出*/
+                                if(var_OP_ptr->getType() == Operand::VARIABLE){//非数组变量
+                                    newCode = new AsmCode("lw ");
+                                    newCode->addOperand(AsmOperand(AsmOperand::REGISTER, 3 + num_of_arg, -1));
+                                    newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, asmVarList.getVar(var_OP_ptr->getName()).getAddr(), 30));
+
+                                }
+                            }
                         }
                     }
                 }
             }
-            p--;
+            p++;
         }
 
         spillReg();//寄存器溢出

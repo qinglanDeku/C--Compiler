@@ -85,8 +85,9 @@ v7 := t64
 GOTO label10
 LABEL label12 :
 t68 := &v6
-t69 := t68
+t69 := *t68
 ARG t69
 t67 := CALL matrixSum
+ARG t67
 WRITE t67
 RETURN #1

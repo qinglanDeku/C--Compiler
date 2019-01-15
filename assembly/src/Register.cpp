@@ -2,9 +2,9 @@
 #include"Assembly.h"
 /*********************class Register***************************/
 
-Register::Register():state(false), name(""), address(0), variableName(""), value(0){}
+Register::Register():state(false), name(""), address(0), variableName(""), value(0), asmType(Register::NONE){}
 
-Register::Register(string &name):state(false), name(name), address(0), variableName(""), value(0){}
+Register::Register(string &name):state(false), name(name), address(0), variableName(""), value(0), asmType(Register::NONE) {}
 
 Register::~Register(){}
 
@@ -49,36 +49,57 @@ Register* MipsRegisterList::getReg(const string& name){
     return nullptr;
 }
 
-/*leaving the spilling to translator*/
-Register& MipsRegisterList::allocateReg(){
+Register& MipsRegisterList::allocateReg(Assembly& assembly_process){
     if(emptyRegList.size() != 0){
-        Register *p = emptyRegList.back();
-        emptyRegList.pop_back();
+        Register *p = emptyRegList.front();
+        emptyRegList.pop_front();
         occupiedRegList.push_back(p);
+        p->setState(true);
         return *p;
     }
     else{
         Register *p(occupiedRegList.front());
         occupiedRegList.pop_front();
-        /*????*/
+        if(p->getAsmType() == Register::LOCT){
+            occupiedRegList.push_back(p);
+            p = occupiedRegList.front();
+            occupiedRegList.pop_front();
+        }
+        spillOneReg(*p, assembly_process);
         occupiedRegList.push_back(p);
         return *p;
     }
 }
 
+
+void MipsRegisterList::spillOneReg(Register &r, Assembly &asm_process){
+    if(r.getAsmType() == Register::V){      //只有寄存器里存放的值是非数组变量才有存放的意义
+        AsmCode *newCode = new AsmCode("sw ");
+        newCode->addOperand(AsmOperand(AsmOperand::REGISTER, getRegNumber(r), -1));
+        newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, r.getVarAddress(), 30));
+        asm_process.addAsmCode(*newCode);
+        delete newCode;
+        newCode = nullptr;
+    }
+}
+
 /*before retract must have spilled*/
-void MipsRegisterList::retractReg(int number){
+void MipsRegisterList::retractReg(int number, Assembly &asm_process){
     for (deque<Register *>::iterator p(occupiedRegList.begin()); p != occupiedRegList.end(); p++){
         if((*p)->getRegName() == regs[number].getRegName()){
+            spillOneReg(*(*p), asm_process);
+            (*p)->setState(false);
             occupiedRegList.erase(p);
             break;
         }
     }
 }
 
-void MipsRegisterList::retractReg(const string &name){
+void MipsRegisterList::retractReg(const string &name, Assembly &asm_process){
     for (deque<Register *>::iterator p(occupiedRegList.begin()); p != occupiedRegList.end(); p++){
         if((*p)->getRegName() == name){
+            spillOneReg(*(*p), asm_process);
+            (*p)->setState(false);
             occupiedRegList.erase(p);
             break;
         }

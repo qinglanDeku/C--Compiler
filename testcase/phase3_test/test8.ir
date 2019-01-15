@@ -10,9 +10,27 @@ READ t6
 v4 := t6
 READ t7
 v5 := t7
+DEC v6 8
+t8 := &v6
+t10 := #0 * #4
+t8 := t8 + t10
+*t8 := #0
+t12 := &v6
+t14 := #1 * #4
+t12 := t12 + t14
+*t12 := #1
 ARG v4
-ARG v5
-ARG v6
-t8 := CALL add
-WRITE t8
+t18 := &v6
+t20 := #0 * #4
+t18 := t18 + t20
+t21 := *t18
+ARG t21
+t22 := &v6
+t24 := #1 * #4
+t22 := t22 + t24
+t25 := *t22
+ARG t25
+t16 := CALL add
+ARG t16
+WRITE t16
 RETURN #0

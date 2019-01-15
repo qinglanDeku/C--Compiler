@@ -13,6 +13,7 @@ using std::vector;
 
 class Variable{
 public:
+
   Variable();
   Variable(int addr, int reg, VariableOP*var);
   Variable(const Variable &a);
@@ -22,11 +23,18 @@ public:
   Operand::OPType getVarType() { return origin->getType(); }
   int getVarSize() { return origin->getSymbolTabItem()->getSize(); }
   int getReg() { return reg; }
+  int setReg(int newval){
+      int retval = reg;
+      reg = newval;
+      return reg;
+  }
+
 
 private:
     VariableOP *origin;
     int addr; //the offset from bp;
     int reg;    //有的变量可能放在寄存器里，比如参数，其余变量也可能在溢出前放在寄存器中，溢出后该值为0
+    
 };
 
 class VariableList{
@@ -107,12 +115,20 @@ class Assembly
     void printAssembly();
     void outputAssembly(const string &filename);
     void spillReg();
+    //下面这个函数用于添加汇编代码代代码表
+    void addAsmCode(const AsmCode &newCode) { AssemblyCodeList.push_back(newCode); } 
+    /*下面两个函数用于指针强制转化*/
     static ConstantOP* getConstOPptr(Operand * OP_ptr){
         ConstantOP *retval = (ConstantOP *)OP_ptr;
         return retval;
     }
     static VariableOP* getVariaOPptr(Operand *OP_ptr){
         VariableOP *retval = (VariableOP *)OP_ptr;
+        return retval;
+    }
+
+    static TemporaryOP* getTempOPptr(Operand *OP_ptr){
+        TemporaryOP *retval = (TemporaryOP *)OP_ptr;
         return retval;
     }
 

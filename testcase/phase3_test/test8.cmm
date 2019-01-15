@@ -4,7 +4,9 @@ int add(int a, int b, int c){
 int main(){
     int x = read();
     int y = read();
-    int z;
-    write(add(x,y,4));
+    int z[2];
+    z[0] = 0;
+    z[1] = 1;
+    write(add(x,z[0],z[1]));
     return 0;
 }
