@@ -17,12 +17,7 @@ void Register::setVar(Variable &var){
 
 /**************************class MipsRegisterList*************************/
 
-string MipsRegisterList::Mips32Regs[32] = {
-    "zero", "at", "v0", "v1", "a0", "a1", "a2", "a3",
-    "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7",
-    "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
-    "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra"
-};
+
 
 MipsRegisterList::MipsRegisterList(){
     for (int i(0); i < 32; i++){
@@ -70,11 +65,6 @@ Register& MipsRegisterList::allocateReg(Assembly& assembly_process){
     else{
         Register *p(occupiedRegList.front());
         occupiedRegList.pop_front();
-        if(p->getAsmType() == Register::LOCT){
-            occupiedRegList.push_back(p);
-            p = occupiedRegList.front();
-            occupiedRegList.pop_front();
-        }
         spillOneReg(*p, assembly_process);
         occupiedRegList.push_back(p);
         p->setState(true);
@@ -85,7 +75,7 @@ Register& MipsRegisterList::allocateReg(Assembly& assembly_process){
 
 void MipsRegisterList::spillOneReg(Register &r, Assembly &asm_process){
      //只有寄存器里存放的值是非数组变量才有溢出的意义
-        AsmCode *newCode = new AsmCode("sw ");
+        AsmCode *newCode = new AsmCode("  sw ");
         newCode->addOperand(AsmOperand(AsmOperand::REGISTER, getRegNumber(r), -1));
         newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, r.getVarAddress(), 30));
         asm_process.addAsmCode(*newCode);
@@ -131,6 +121,21 @@ void MipsRegisterList::retractReg(const string &name, Assembly &asm_process){
 void MipsRegisterList::spillAllReg(Assembly &asm_process){
     for (int i(0); i < occupiedRegList.size(); i++){
         spillOneReg(*(occupiedRegList[i]), asm_process);
+    }
+    occupiedRegList.clear();
+    emptyRegList.clear();
+    for (int i(8); i< 24; i++){
+        emptyRegList.push_back(&regs[i]);
+    }
+}
+
+void MipsRegisterList::clearReg(Assembly &asm_process){
+    for (int i(0); i < occupiedRegList.size(); i++){
+        asm_process.asmVarList.getVar(occupiedRegList[i]->getVarName()).setReg(0);
+        occupiedRegList[i]->setVarName("");
+        //r.setAsmType(Register::NONE);
+        occupiedRegList[i]->setState(false);
+        occupiedRegList[i]->setAddress(0);
     }
     occupiedRegList.clear();
     emptyRegList.clear();

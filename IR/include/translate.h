@@ -20,8 +20,8 @@ public:
     void translateDef(SyntaxTreeNode *DefNode, Analyze *analyzeResult);
     static string turnoverRelopStr(const string &relopStr);
     void printVariable();
-    const list<InterCode *> &getCodeList() { return IRCodeList; }
-    const list<VariableOP *> &getVarList() { return variableList; }
+    list<InterCode *> &getCodeList() { return IRCodeList; }
+    list<VariableOP *> &getVarList() { return variableList; }
 
   private:
     list<InterCode*> IRCodeList;

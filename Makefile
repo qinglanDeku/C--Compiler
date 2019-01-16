@@ -1,6 +1,7 @@
 OBJ1 = syntax/*.o
 OBJ2 = semantic/*.o
 OBJ3 = IR/*.o
+OBJ4 = assembly/*.o
 TARGET = parser
 
 $(TARGET) :
@@ -8,7 +9,7 @@ $(TARGET) :
 	cd semantic && make;
 	cd IR && make;
 	cd assembly && make;
-	g++ -o $(TARGET) $(OBJ1) $(OBJ2) $(OBJ3)  -lfl
+	g++ -o $(TARGET) $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4)  -lfl
         
 clean :
 	cd syntax && make clean;

@@ -8,6 +8,7 @@ using std::string;
 using std::vector;
 class Variable;
 class Assembly;
+extern string Mips32Regs[32];
 class Register
 {
   public:
@@ -82,7 +83,7 @@ public:
   }
   void spillOneReg(Register &r, Assembly &Asm_process);     //溢出单个寄存器
   void spillAllReg(Assembly &Asm_process);
-  static string Mips32Regs[32];
+  void clearReg(Assembly &Asm_process);
 
 private:
   vector<Register> regs;

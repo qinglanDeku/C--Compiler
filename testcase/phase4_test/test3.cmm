@@ -1,0 +1,33 @@
+int main(){
+    int a0 = 30;
+    int a1 = 29;
+    int a2 = 28;
+    int a3 = 27;
+    int a4 = 26;
+    int a5 = 25;
+    int a6 = 24;
+    int a7 = 23;
+    int a8 = 22;
+    int a9 = 21;
+    int a10 = 20;
+    int a11 = 19;
+    int a12 = 18;
+    int a13 = 17;
+    int a14 = 16;
+    int a15 = 15;
+    int a16 = 14;
+    int a17 = 13;
+    int a18= 12;
+    int a19 = 11;
+    int a20 = 10;
+
+    write(a10);
+    write(a0);
+    write(a1);
+    write(a2);
+    write(a20);
+    write(a19);
+    write(a0 + a1 + a2 + a20 + a19);
+    return a15;
+
+}

@@ -833,8 +833,9 @@ void Translate::printCodeList(){
     while (it != IRCodeList.end())
     {
         cout << (*it)->getCode()  << endl;
+        ;
         it++;
-        //<< " ;  "<<(*it)->getType()
+        //<< " ;  " << (*it)->getType()
     }
 }
 

@@ -1,5 +1,6 @@
 #include"BasicBlock.h"
-
+#include<iostream>
+//#define DEBUG 1
 /***********class BasicBLock****************/
 BasicBlock::BasicBlock() : begin(0), end(0){};
 
@@ -12,7 +13,7 @@ BasicBlock::~BasicBlock(){}
 
 list<InterCode *>::iterator BasicBlock::getCode(int number)const {
     list<InterCode *>::iterator p(BP);
-    for (int i(1); i < number; i++)
+    for (int i(0); i < number; i++)
     {
         p++;
     }
@@ -42,6 +43,9 @@ InterCode::IRtype BasicBlock::getCodeType(string code){
 BlockList::BlockList(){};
 
 BlockList::BlockList(list<InterCode *> &codelist){
+#ifdef DEBUG
+    std::cout << "begin divide Block" << std::endl;
+#endif
     list<InterCode *>::iterator BP(codelist.begin()), p(codelist.begin());
     int begin(0), end(0);
     while(p != codelist.end()){
@@ -53,7 +57,7 @@ BlockList::BlockList(list<InterCode *> &codelist){
             end++;
         }
         if(p == codelist.end()){
-            blockList.push_back(BasicBlock(begin, end , BP, p));
+            blockList.push_back(BasicBlock(begin, end - 1 , BP, p));
         }
         else{
             p--;
@@ -65,6 +69,12 @@ BlockList::BlockList(list<InterCode *> &codelist){
             begin = end;
         }
     }
+
+#ifdef DEBUG
+    for (int i(0); i < blockList.size(); i++){
+        std::cout << blockList[i].getBegin() << "   " << blockList[i].getEnd() << std::endl;
+    }
+#endif
 }
 
 BlockList::~BlockList(){}

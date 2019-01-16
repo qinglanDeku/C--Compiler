@@ -2,9 +2,9 @@
 #include<list>
 #include<vector>
 #include<string>
+using std::list;
 using std::string;
 using std::vector;
-using std::list;
 
 class Analyze;
 

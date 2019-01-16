@@ -3,6 +3,8 @@
 #include<list>
 #include<deque>
 #include<string>
+#include<iostream>
+#include<fstream>
 #include"../../IR/include/InterCode.h"
 #include"BasicBlock.h"
 #include"Register.h"
@@ -112,11 +114,13 @@ public:
   AsmCode(const AsmCode &a);
   ~AsmCode();
   string getStrAsmCode() {
-      if(strCode == "")
-        strCode = produceStrCode();
+      if (strCode == "")
+          strCode = produceStrCode();
       return strCode;
   }
-  void addOperand(AsmOperand newOP) { OperandList.push_back(newOP); }
+  void addOperand(AsmOperand newOP) { 
+      OperandList.push_back(newOP); 
+      }
   string getOperator() { return AsmOperator; }
 
 private:
@@ -130,14 +134,21 @@ class Assembly
 {
   public:
     Assembly();
-    Assembly(list<InterCode *> IRCodeList, list<VariableOP *> variableList);
+    Assembly(list<InterCode *> IRCodeList, list<VariableOP *> variableList, string* output);
     ~Assembly();
     void produceAssembly();
     void printAssembly();
     void outputAssembly(const string &filename);
     void spillReg() { Mips32.spillAllReg(*this); }
     //下面这个函数用于添加汇编代码代代码表
-    void addAsmCode(const AsmCode &newCode) { AssemblyCodeList.push_back(newCode); } 
+    void addAsmCode(const AsmCode &newCode) {
+        AssemblyCodeList.push_back(newCode);
+        if(!ifOutput)
+            std::cout << AssemblyCodeList.back().getStrAsmCode() << std::endl;
+        else
+            output<< AssemblyCodeList.back().getStrAsmCode() << std::endl;
+        AssemblyCodeList.clear();
+    }
     /*下面两个函数用于指针强制转化*/
     static ConstantOP* getConstOPptr(Operand * OP_ptr){
         ConstantOP *retval = (ConstantOP *)OP_ptr;
@@ -153,19 +164,23 @@ class Assembly
         return retval;
     }
     VariableList asmVarList;
-    static void clearDynamicVar(void* p){
+    static void clearDynamicVar(AsmCode*& p){
+        delete p;
+        p = nullptr;
+    }
+    static void clearDynamicVar(Variable*& p){
         delete p;
         p = nullptr;
     }
     void subSp(int subVal){
-        AsmCode code0("addi ");
+        AsmCode code0("  addi ");
         code0.addOperand(AsmOperand(AsmOperand::REGISTER, 29, -1));
         code0.addOperand(AsmOperand(AsmOperand::REGISTER, 29, -1));
         code0.addOperand(AsmOperand(AsmOperand::IMMEDIATE, -subVal, -1));
         addAsmCode(code0);
     }
     void addSp(int addVal){
-        AsmCode code0("addi ");
+        AsmCode code0("  addi ");
         code0.addOperand(AsmOperand(AsmOperand::REGISTER, 29, -1));
         code0.addOperand(AsmOperand(AsmOperand::REGISTER, 29, -1));
         code0.addOperand(AsmOperand(AsmOperand::IMMEDIATE, addVal, -1));
@@ -173,7 +188,7 @@ class Assembly
     }
     void saveRa(){
         subSp(4);
-        AsmCode *code = new AsmCode("sw ");
+        AsmCode *code = new AsmCode("  sw ");
         code->addOperand(AsmOperand(AsmOperand::REGISTER, 31, -1));
         code->addOperand(AsmOperand(AsmOperand::ADDRESS, 0, 29));
         addAsmCode(*code);
@@ -181,7 +196,7 @@ class Assembly
     }
 
     void retRa(){
-        AsmCode *code = new AsmCode("lw ");
+        AsmCode *code = new AsmCode("  lw ");
         code->addOperand(AsmOperand(AsmOperand::REGISTER, 31, -1));
         code->addOperand(AsmOperand(AsmOperand::ADDRESS, 0, 29));
         addAsmCode(*code);
@@ -223,14 +238,16 @@ class Assembly
     static void errorRoutine(string errorInfo);
 
   private:
-    list<InterCode *> IRCodeList;
+    vector<InterCode *> IRCodeList;
     list<VariableOP *> variableList;
     static string AsmHead[22];
     BlockList blockList;
+    std::ofstream output;
+    bool ifOutput;
     MipsRegisterList Mips32;
     vector<AsmCode> AssemblyCodeList;
     void translateOneBlock(const BasicBlock &BB);
-    int translateOneLine(list<InterCode *>::iterator it, int &offset); //这里的offset是函数体内局部变量的存储地址在栈中的偏移量
+    int translateOneLine(int i, int &offset); //这里的offset是函数体内局部变量的存储地址在栈中的偏移量
     int translateParam(list<InterCode *>::iterator it, int offset);    //这里的offset是参数的offset
 };
                                                                                                             
