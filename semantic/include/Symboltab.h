@@ -30,7 +30,7 @@ public:
     ~varItem() {}
 
     string GetName(){return name;}
-    const TYPE GetType(){return type;}
+    const TYPE GetType()const {return type;}
     const int GetLineNo(){return lineNo;}
     const int GetDimension(){return dimension;}
     const int getSize(){

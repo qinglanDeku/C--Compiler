@@ -1,15 +1,14 @@
-int add(int a, int b, int c){
-    return a+b + c;
+int add(int a, int b, int c[2]){
+    return a+b + c[1]+c[0];
 }
 int main(){
-    int x = read();
-    int y = read();
-    int z[3];
-    int w[2];
+    int x[2];
+    int z[2];
+    x[0] = read();
+    x[1] = read();
+
     z[0] = read();
-    z[1] = add(z[0],x,y);
-    z[2] = 4;
-    w[0] = z[1] + z[0] + z[2];
-    write(add(x,z[0],z[1]));
+    z[1] = read();
+    write(add(x[0],x[1], z));
     return 0;
 }

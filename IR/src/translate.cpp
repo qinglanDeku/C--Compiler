@@ -420,7 +420,12 @@ void Translate::translateExp(SyntaxTreeNode *expNode, Analyze *analyzeResult, Op
                     {
                         if((*arglist)[i]->getType() == Operand::TEMP_ARRAY_ADRESS){
                             TemporaryOP *t1(new TemporaryOP(Operand::TEMP_VARIABLE, newTemp()));
-                            AssignCode *code0(new AssignCode(InterCode::ASSIGNFROMLOC, t1, (*arglist)[i]));
+                            AssignCode *code0;
+                            if ((function->GetArgList())[i].GetType() == INTARRAY)
+                                code0 = new AssignCode(InterCode::ASSIGN, t1, (*arglist)[i]);
+                            else{
+                                code0 = new AssignCode(InterCode::ASSIGNFROMLOC, t1, (*arglist)[i]);
+                            }
                             ArgCode *code1(new ArgCode(InterCode::ARG, t1));
                             this->IRCodeList.push_back(code0);
                             templist.push_back(code1);
@@ -827,8 +832,9 @@ void Translate::printCodeList(){
     list<InterCode *>::iterator it(IRCodeList.begin());
     while (it != IRCodeList.end())
     {
-        cout << (*it)->getCode() << " ;  "<<(*it)->getType() << endl;
+        cout << (*it)->getCode()  << endl;
         it++;
+        //<< " ;  "<<(*it)->getType()
     }
 }
 

@@ -2,65 +2,54 @@ FUNCTION add :
 PARAM v3
 PARAM v2
 PARAM v1
-t2 := v1 + v2
-t1 := t2 + v3
+t4 := v1 + v2
+t5 := v3
+t9 := #1 * #4
+t5 := t5 + t9
+t10 := *t5
+t2 := t4 + t10
+t3 := v3
+t12 := #0 * #4
+t3 := t3 + t12
+t13 := *t3
+t1 := t2 + t13
 RETURN t1
 FUNCTION main :
-READ t6
-v4 := t6
-READ t7
-v5 := t7
-DEC v6 12
-DEC v7 8
-t8 := &v6
-t10 := #0 * #4
-t8 := t8 + t10
-*t8 := #0
-t12 := &v6
-t14 := #1 * #4
-t12 := t12 + t14
-t16 := &v6
-t18 := #0 * #4
-t16 := t16 + t18
-t21 := *t16
-ARG t21
-ARG v4
-ARG v5
-t15 := CALL add
-*t12 := t15
-t22 := &v6
-t24 := #2 * #4
+DEC v4 8
+DEC v5 8
+t14 := &v4
+t16 := #0 * #4
+t14 := t14 + t16
+READ t17
+*t14 := t17
+t18 := &v4
+t20 := #1 * #4
+t18 := t18 + t20
+READ t21
+*t18 := t21
+t22 := &v5
+t24 := #0 * #4
 t22 := t22 + t24
-*t22 := #4
-t26 := &v7
-t28 := #0 * #4
+READ t25
+*t22 := t25
+t26 := &v5
+t28 := #1 * #4
 t26 := t26 + t28
-t32 := &v6
-t35 := #1 * #4
-t32 := t32 + t35
-t33 := &v6
-t37 := #0 * #4
-t33 := t33 + t37
-t38 := *t32
-t39 := *t33
-t30 := t38 + t39
-t31 := &v6
-t41 := #2 * #4
-t31 := t31 + t41
-t42 := *t31
-t29 := t30 + t42
+READ t29
 *t26 := t29
-t45 := &v6
-t47 := #0 * #4
-t45 := t45 + t47
-t48 := &v6
-t50 := #1 * #4
-t48 := t48 + t50
-t51 := *t45
-t52 := *t48
-ARG v4
-ARG t51
-ARG t52
-t43 := CALL add
-WRITE t43
+t31 := &v4
+t33 := #0 * #4
+t31 := t31 + t33
+t34 := &v4
+t36 := #1 * #4
+t34 := t34 + t36
+t37 := &v5
+t38 := *t31
+t39 := *t34
+t40 := t37
+ARG t38
+ARG t39
+ARG t40
+t30 := CALL add
+WRITE t30
 RETURN #0

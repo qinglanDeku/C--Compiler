@@ -84,8 +84,7 @@ Register& MipsRegisterList::allocateReg(Assembly& assembly_process){
 
 
 void MipsRegisterList::spillOneReg(Register &r, Assembly &asm_process){
-    if(r.getAsmType() == Register::V){      //只有寄存器里存放的值是非数组变量才有溢出的意义
-        
+     //只有寄存器里存放的值是非数组变量才有溢出的意义
         AsmCode *newCode = new AsmCode("sw ");
         newCode->addOperand(AsmOperand(AsmOperand::REGISTER, getRegNumber(r), -1));
         newCode->addOperand(AsmOperand(AsmOperand::ADDRESS, r.getVarAddress(), 30));
@@ -93,9 +92,8 @@ void MipsRegisterList::spillOneReg(Register &r, Assembly &asm_process){
         asm_process.asmVarList.getVar(r.getVarName()).setReg(0);
         delete newCode;
         newCode = nullptr;
-    }
     r.setVarName("");
-    r.setAsmType(Register::NONE);
+    //r.setAsmType(Register::NONE);
     r.setState(false);
     r.setAddress(0);
     for (deque<Register*>::iterator it = occupiedRegList.begin(); it != occupiedRegList.end(); it++){

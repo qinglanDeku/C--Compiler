@@ -602,6 +602,8 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
             p++;
             retval++;
         }
+        spillReg();
+
         retval += translateOneLine(p, offset);//这一行一定是call指令
 
         //把a0 和 a3的值存回寄存器
@@ -703,6 +705,7 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
                     Register &r = Mips32.allocateReg(*this);
                     r.setVar(asmVarList.getVar(op1->getName()));
                     asmVarList.getVar(op1->getName()).setReg(Mips32.getRegNumber(r));
+                    moveFromMemtoReg(asmVarList.getVar(op1->getName()).getReg(), asmVarList.getVar(op1->getName()).getAddr(), 30);
                 }
                 reg1 = asmVarList.getVar(op1->getName()).getReg();
             }
@@ -722,6 +725,7 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
                     Register &r = Mips32.allocateReg(*this);
                     r.setVar(asmVarList.getVar(op2->getName()));
                     asmVarList.getVar(op2->getName()).setReg(Mips32.getRegNumber(r));
+                    moveFromMemtoReg(asmVarList.getVar(op2->getName()).getReg(), asmVarList.getVar(op2->getName()).getAddr(), 30);
                 }
                 reg2 = asmVarList.getVar(op2->getName()).getReg();
             }
@@ -753,29 +757,147 @@ int Assembly::translateOneLine(list<InterCode *>::iterator it, int &offset){
         Jump("write", "jal");
         retRa();
     }
-
+                                                            
     else if((*it)->getType() == InterCode::ASSIGN){
+        Operand *op1 = (*it)->getOperand(1);
+        Operand *op2 = (*it)->getOperand(2);     
+        int reg1(0), reg2(0); 
+        if(asmVarList.getVar(op1->getName()).getReg() == 0){
+            allocateRegForVar(asmVarList.getVar(op1->getName()));
+        }
+        reg1 = asmVarList.getVar(op1->getName()).getReg();
+        if (op2->getType() == Operand::ICONSTANT)
+        {                                           
+            ConstantOP *const_ptr = (ConstantOP *)op2;
+            loadConsttoReg(const_ptr->getIntVal(), reg1);                                        
+        }              
+        else{                          
+            if(!asmVarList.ifVarInList(op2->getName())){
+                reg2 = 0;        
+            } 
+            else{                                           
+                if(asmVarList.getVar(op2->getName()).getReg() == 0){
+                    allocateRegForVar(asmVarList.getVar(op2->getName()));
+                    moveFromMemtoReg(asmVarList.getVar(op2->getName()).getReg(), asmVarList.getVar(op2->getName()).getAddr(), 30);
+                }
+                reg2 = asmVarList.getVar(op2->getName()).getReg();
+            }
+            moveFromRegtoReg(reg1, reg2);
+        }
         
     }
     else if((*it)->getType() == InterCode::ASSIGNFROMLOC){
-        
+        Operand *op1 = (*it)->getOperand(1);
+        Operand *op2 = (*it)->getOperand(2);
+        if(asmVarList.getVar(op1->getName()).getReg() == 0){
+            allocateRegForVar(asmVarList.getVar(op1->getName()));
+        }
+        if(asmVarList.getVar(op2->getName()).getReg() == 0){
+            allocateRegForVar(asmVarList.getVar(op2->getName()));
+            moveFromMemtoReg(asmVarList.getVar(op2->getName()).getReg(), asmVarList.getVar(op2->getName()).getAddr(), 30);
+        }
+        moveFromMemtoReg(asmVarList.getVar(op1->getName()).getReg(), 0, asmVarList.getVar(op2->getName()).getReg());
+
     }
     else if((*it)->getType() == InterCode::ASSIGNLOC){
-
+        Operand *op1 = (*it)->getOperand(1);
+        Operand *op2 = (*it)->getOperand(2);     
+        int reg1(0), reg2(0); 
+        if(asmVarList.getVar(op1->getName()).getReg() == 0){
+            allocateRegForVar(asmVarList.getVar(op1->getName()));
+        }
+        reg1 = asmVarList.getVar(op1->getName()).getReg();
+        if (op2->getType() == Operand::ICONSTANT)
+        {                                           
+            ConstantOP *const_ptr = (ConstantOP *)op2;
+            loadConsttoReg(const_ptr->getIntVal(), reg1);                                        
+        }              
+        else{                          
+            if(!asmVarList.ifVarInList(op2->getName())){
+                reg2 = 0;        
+            } 
+            else{                                           
+                if(asmVarList.getVar(op2->getName()).getReg() == 0){
+                    allocateRegForVar(asmVarList.getVar(op2->getName()));
+                    moveFromMemtoReg(asmVarList.getVar(op2->getName()).getReg(), asmVarList.getVar(op2->getName()).getAddr(), 30);
+                }
+                reg2 = asmVarList.getVar(op2->getName()).getReg();
+            }
+            moveFromRegtoReg(reg1, reg2);
+        } 
     }
     else if((*it)->getType() == InterCode::ASSIGNTOLOC){
-        
+        Operand *op1 = (*it)->getOperand(1);
+        Operand *op2 = (*it)->getOperand(2);
+        int reg1(0), reg2(0);
+        if (asmVarList.getVar(op1->getName()).getReg() == 0)
+            allocateRegForVar(asmVarList.getVar(op1->getName()));
+        reg1 = asmVarList.getVar(op1->getName()).getReg();
+        moveFromMemtoReg(reg1, asmVarList.getVar(op1->getName()).getAddr(), 30);
+        if (op2->getType() == Operand::ICONSTANT)
+        {
+            ConstantOP *const_ptr = (ConstantOP *)op2;
+            loadConsttoReg(const_ptr->getIntVal(), 25);
+            reg2 = 25;
+        }
+        else{
+            if(!asmVarList.ifVarInList(op2->getName())){
+                reg2 = 0;
+            }
+            else{
+                if(asmVarList.getVar(op2->getName()).getReg() == 0){
+                    allocateRegForVar(asmVarList.getVar(op2->getName()));
+                    moveFromMemtoReg(asmVarList.getVar(op2->getName()).getReg(), asmVarList.getVar(op2->getName()).getAddr(), 30);
+                }
+                reg2 = asmVarList.getVar(op2->getName()).getReg();
+            }
+        }
+        moveFromRegtoMem(reg1, 0, reg2);
     }
-    else if((*it)->getType() == InterCode::PLUS){
-
-    }
-    else if((*it)->getType() == InterCode::MUL){
-
-    }
-    else if((*it)->getType() == InterCode::SUB){
-
-    }
-    else if((*it)->getType() == InterCode::DIV){
+    else if((*it)->getType() == InterCode::PLUS || (*it)->getType() == InterCode::MUL || (*it)->getType() == InterCode::SUB || (*it)->getType() == InterCode::DIV){
+        Operand *op1 = (*it)->getOperand(1);
+        Operand *op2 = (*it)->getOperand(2);
+        Operand *op3 = (*it)->getOperand(3);
+        int reg1(0), reg2(0), reg3(0);
+        if(asmVarList.getVar(op1->getName()).getReg()  == 0){
+            allocateRegForVar(asmVarList.getVar(op1->getName()));
+        }
+        reg1 = asmVarList.getVar(op1->getName()).getReg();
+        if (op2->getType() == Operand::ICONSTANT){
+            ConstantOP *const_ptr = (ConstantOP *)op2;
+            loadConsttoReg(const_ptr->getIntVal(), 24);
+            reg2 = 24;
+        }
+        else{
+            if(!asmVarList.ifVarInList(op2->getName())){
+                reg2 = 0;
+            }
+            else{
+                if(asmVarList.getVar(op2->getName()).getReg() == 0){
+                    allocateRegForVar(asmVarList.getVar(op2->getName()));
+                    moveFromMemtoReg(asmVarList.getVar(op2->getName()).getReg(), asmVarList.getVar(op2->getName()).getAddr(), 30);
+                }
+                reg2 = asmVarList.getVar(op2->getName()).getReg();
+            }
+        }
+        if (op3->getType() == Operand::ICONSTANT){
+            ConstantOP *const_ptr = (ConstantOP *)op3;
+            loadConsttoReg(const_ptr->getIntVal(), 25);
+            reg3 = 25;
+        }
+        else{
+            if(!asmVarList.ifVarInList(op3->getName())){
+                reg3 = 0;
+            }
+            else{
+                if(asmVarList.getVar(op3->getName()).getReg() == 0){
+                    allocateRegForVar(asmVarList.getVar(op3->getName()));
+                    moveFromMemtoReg(asmVarList.getVar(op3->getName()).getReg(), asmVarList.getVar(op3->getName()).getAddr(), 30);
+                }
+                reg3 = asmVarList.getVar(op3->getName()).getReg();
+            }
+        }
+        setBinop((*it)->getType(), reg1, reg2, reg3);
 
     }
 
@@ -913,6 +1035,12 @@ void Assembly::setCondsubFunc(string relopAsm, int reg1, int reg2, int dst){
     clearDynamicVar(code0);
 }
 
+void Assembly::allocateRegForVar(Variable &var){
+        Register &r = Mips32.allocateReg(*this);
+        r.setVar(var);
+        var.setReg(Mips32.getRegNumber(r));
+}
+
 string Assembly::turnIntToStr(int val){
     stringstream ss;
     string retval;
@@ -944,4 +1072,39 @@ void Assembly::createSpace(Operand *var, int &bp_offset){
         asmVarList.addVar(*new_var);
         clearDynamicVar(new_var);
     }        
+}
+
+
+void Assembly::setBinop(InterCode::IRtype type, int reg1, int reg2, int reg3){
+    AsmCode *code0(nullptr);
+    if (type == InterCode::PLUS)
+    {
+        code0 = new AsmCode("add ");
+    }
+    else if(type == InterCode::MUL){
+        code0 = new AsmCode("mul ");
+    }
+    else if(type == InterCode::SUB){
+        code0 = new AsmCode("sub ");
+    }
+    else if(type == InterCode::DIV){
+        code0 = new AsmCode("div ");
+        code0->addOperand(AsmOperand(AsmOperand::REGISTER, reg2, -1));
+        code0->addOperand(AsmOperand(AsmOperand::REGISTER, reg3, -1));
+        AsmCode* code1 = new AsmCode("mflo ");
+        code1->addOperand(AsmOperand(AsmOperand::REGISTER, reg1, -1));
+        addAsmCode(*code0);
+        addAsmCode(*code1);
+        clearDynamicVar(code0);
+        clearDynamicVar(code1);
+        return;
+    }
+    else{
+        errorRoutine("error in setBinop: wrong binop type");
+    }
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, reg1, -1));
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, reg2, -1));
+    code0->addOperand(AsmOperand(AsmOperand::REGISTER, reg3, -1));
+    addAsmCode(*code0);
+    clearDynamicVar(code0);
 }

@@ -1,3 +1,7 @@
+int func(int mm[3][4][6]){
+    return mm[0][0][0];
+}
+
 int matrixSum(int matrix[3][5][6]){
     int i = 0;
     int j = 0;
@@ -15,10 +19,14 @@ int matrixSum(int matrix[3][5][6]){
         }
         i = i + 1;
     }
+    i = func(matrix);
     return retval;
 }
 
+
+
 int main(){
+    int mmm[6];
     int m[3][5][6];
     int x = 0;
     int y = 0;
@@ -29,9 +37,9 @@ int main(){
         while(y < 5){
             z = 0;
             while(z < 6){
-               m[x][y][z] = p - 1;
+               m[x][y][z] = p;
                p = p+ 1;
-                z = z + 1;
+               z = z + 1;
             }
             y= y + 1;
         }

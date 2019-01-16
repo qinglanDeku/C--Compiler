@@ -212,6 +212,10 @@ class Assembly
 
     void createSpace(Operand *var, int &bp_offset);
 
+    void setBinop(InterCode::IRtype binop, int reg1, int reg2, int reg3);
+
+    void allocateRegForVar(Variable &var);
+
     static string turnIntToStr(int val);
 
     static int turnStrToInt(string str);
@@ -229,3 +233,4 @@ class Assembly
     int translateOneLine(list<InterCode *>::iterator it, int &offset); //这里的offset是函数体内局部变量的存储地址在栈中的偏移量
     int translateParam(list<InterCode *>::iterator it, int offset);    //这里的offset是参数的offset
 };
+                                                                                                            
