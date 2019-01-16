@@ -258,7 +258,11 @@ void Assembly::translateOneBlock(const BasicBlock &BB){
         i = i + moveOn;
     }
     //Mips32.clearReg(*this);
-    cout << endl;
+    if(!ifOutput)
+        cout << endl;
+    else{
+        output << endl;
+    }
 }
 
 int Assembly::translateOneLine(int line_no, int &offset){

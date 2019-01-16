@@ -1,0 +1,20 @@
+int addA(int a[50]){
+    int retval = 0;
+    int i = 0;
+    while(i < 50){
+        retval = retval + a[i];
+        i = i+1;
+    }
+    return retval;
+}
+
+int main(){
+    int array[50];
+    int j = 0;
+    while( j < 50){
+        array[j] = 200 - j;
+        j = j + 1;
+    }
+    write(addA(array));
+    return 0;
+}
